@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
+import 'sign_in_screen.dart';
 import 'landing_screen.dart';
-import 'sign_up_screen.dart';
 import '../../core/constants/app_constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/curved_header_clipper.dart';
 
-class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<SignInScreen> createState() => _SignInScreenState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void _signIn() {
+  void _signUp() {
     if (_formKey.currentState!.validate()) {
       Navigator.pushReplacement(
         context,
@@ -77,9 +77,9 @@ class _SignInScreenState extends State<SignInScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        // Sign In Title
+                        // Sign Up Title
                         const Text(
-                          'Sign In',
+                          'Sign Up',
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -114,31 +114,34 @@ class _SignInScreenState extends State<SignInScreen> {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter password';
                                 }
+                                if (value.length < 6) {
+                                  return 'Password must be at least 6 characters';
+                                }
                                 return null;
                               },
                             ),
                           ],
                         ),
                         
-                        // Sign In Button
+                        // Sign Up Button
                         CustomButton(
-                          text: 'Sign In',
-                          onPressed: _signIn,
+                          text: 'Sign Up',
+                          onPressed: _signUp,
                         ),
                         
-                        // Sign Up Link
+                        // Sign In Link
                         GestureDetector(
                           onTap: () {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const SignUpScreen(),
+                                builder: (context) => const SignInScreen(),
                               ),
                             );
                           },
                           child: RichText(
                             text: const TextSpan(
-                              text: "Don't have an account? ",
+                              text: "Already have an account? ",
                               style: TextStyle(
                                 color: AppConstants.textDark,
                                 fontSize: 16,
@@ -146,7 +149,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               ),
                               children: [
                                 TextSpan(
-                                  text: 'Sign Up',
+                                  text: 'Sign In',
                                   style: TextStyle(
                                     color: AppConstants.primaryPurple,
                                     fontWeight: FontWeight.w600,

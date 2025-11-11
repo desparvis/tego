@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'sign_in_screen.dart';
+import '../../core/constants/app_constants.dart';
+import '../widgets/custom_button.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -10,56 +12,57 @@ class SplashScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-
-          Column(
-            children: [
-              const SizedBox(height: 100),
-              const Text(
-                'Tego',
-                style: TextStyle(
-                  fontFamily: 'Allura',
-                  fontSize: 60,
-                  color: Color(0xFF7430EB),
-                  fontWeight: FontWeight.bold,
-                ),
+          // Background Gradient
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppConstants.primaryPurple.withOpacity(0.1),
+                  AppConstants.accentPink.withOpacity(0.3),
+                  AppConstants.primaryPurple.withOpacity(0.2),
+                ],
               ),
-              Expanded(
-                child: Image.asset(
-                  'assets/images/home.jpg',  
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,  
-                ),
-              ),
-            ],
+            ),
           ),
           
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignInScreen()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF7430EB),  
-                  minimumSize: const Size(200, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: const Text(
-                  'Get Started',
+          // Content
+          SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 80),
+                // App Name - Tego
+                const Text(
+                  AppConstants.appName,
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
+                    fontFamily: 'Dancing Script',
+                    fontSize: 32,
+                    color: AppConstants.primaryPurple,
+                    fontWeight: FontWeight.bold,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
-              ),
+                
+                const Spacer(),
+                
+                // Get Started Button
+                Padding(
+                  padding: const EdgeInsets.all(AppConstants.defaultPadding),
+                  child: CustomButton(
+                    text: 'Get Started',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignInScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         ],

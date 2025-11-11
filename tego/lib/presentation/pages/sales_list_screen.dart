@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'landing_screen.dart';
+import '../widgets/bottom_navigation_widget.dart';
 
 class SalesListScreen extends StatelessWidget {
   const SalesListScreen({super.key});
@@ -133,35 +133,10 @@ class SalesListScreen extends StatelessWidget {
         ],
       ),
 
-      // SAME BOTTOM NAV as Home
-      bottomNavigationBar: _buildBottomNav(context, selectedIndex: 1),
+      // Bottom Navigation
+      bottomNavigationBar: const BottomNavigationWidget(currentIndex: 1),
     );
   }
 
-  // Reusable Bottom Navigation Bar
-  Widget _buildBottomNav(BuildContext context, {required int selectedIndex}) {
-    return BottomNavigationBar(
-      currentIndex: selectedIndex,
-      selectedItemColor: const Color(0xFF7430EB),
-      unselectedItemColor: Colors.grey,
-      backgroundColor: Colors.white,
-      elevation: 12,
-      type: BottomNavigationBarType.fixed,
-      onTap: (index) {
-        if (index == 0) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const LandingScreen()),
-          );
-        }
 
-      },
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.attach_money), label: 'Sales'),
-        BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Add'),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
-      ],
-    );
-  }
 }

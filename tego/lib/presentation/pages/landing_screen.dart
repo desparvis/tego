@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'sales_list_screen.dart';
+import '../../core/utils/preferences_service.dart';
+import '../widgets/bottom_navigation_widget.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -11,15 +12,28 @@ class LandingScreen extends StatefulWidget {
 class _LandingScreenState extends State<LandingScreen> {
   // Tracks which tab is selected (0 = Home)
   int _selectedIndex = 0;
+  String _username = 'Username';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+
+  void _loadUsername() {
+    setState(() {
+      _username = PreferencesService.getUsername();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       // Top App Bar — shows username and time
       appBar: AppBar(
-        title: const Text(
-          'Username',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          _username,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
           Padding(
@@ -132,8 +146,8 @@ class _LandingScreenState extends State<LandingScreen> {
         ),
       ),
 
-      // Bottom Navigation — shared with Sales page
-      bottomNavigationBar: _buildBottomNav(context, selectedIndex: 0),
+      // Bottom Navigation
+      bottomNavigationBar: const BottomNavigationWidget(currentIndex: 0),
     );
   }
 
@@ -219,32 +233,5 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
-  // === SHARED BOTTOM NAVIGATION BAR ===
-  // This is used in BOTH Home and Sales pages
-  Widget _buildBottomNav(BuildContext context, {required int selectedIndex}) {
-    return BottomNavigationBar(
-      currentIndex: selectedIndex,
-      selectedItemColor: const Color(0xFF7430EB),
-      unselectedItemColor: Colors.grey,
-      backgroundColor: Colors.white,
-      elevation: 12,
-      type: BottomNavigationBarType.fixed,
-      onTap: (index) {
-        if (index == 1) {
-          // Go to Sales List
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const SalesListScreen()),
-          );
-        }
-        // Add other pages later (Add, Settings)
-      },
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.attach_money), label: 'Sales'),
-        BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Add'),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
-      ],
-    );
-  }
+
 }

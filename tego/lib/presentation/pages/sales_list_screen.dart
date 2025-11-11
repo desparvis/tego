@@ -1,4 +1,3 @@
-// lib/sales_list_screen.dart
 import 'package:flutter/material.dart';
 import 'landing_screen.dart';
 

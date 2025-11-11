@@ -1,7 +1,5 @@
-// lib/sign_in_screen.dart
 import 'package:flutter/material.dart';
-import 'landing_screen.dart';  // Import the landing screen
-// Import splash screen (for consistency)
+import 'landing_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});

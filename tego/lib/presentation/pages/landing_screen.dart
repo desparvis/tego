@@ -1,6 +1,5 @@
-// lib/landing_screen.dart
 import 'package:flutter/material.dart';
-import 'sales_list_screen.dart'; // Import the new sales page
+import 'sales_list_screen.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});

@@ -49,7 +49,7 @@ class _LandingScreenState extends State<LandingScreen> {
               '9:30',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
             ),
           ),
@@ -83,7 +83,7 @@ class _LandingScreenState extends State<LandingScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF7430EB).withOpacity(0.3),
+                      color: const Color(0xFF7430EB).withValues(alpha: 0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
@@ -104,7 +104,7 @@ class _LandingScreenState extends State<LandingScreen> {
                       '+2 made today',
                       style: TextStyle(
                         fontSize: 18,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ],
@@ -167,12 +167,13 @@ class _LandingScreenState extends State<LandingScreen> {
   Future<void> _signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const SignInScreen()),
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Sign out failed')));
@@ -205,7 +206,7 @@ class _LandingScreenState extends State<LandingScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -229,7 +230,7 @@ class _LandingScreenState extends State<LandingScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -253,7 +254,7 @@ class _LandingScreenState extends State<LandingScreen> {
             title,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black.withValues(alpha: 0.7),
             ),
           ),
         ],

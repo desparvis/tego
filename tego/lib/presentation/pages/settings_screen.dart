@@ -233,7 +233,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Icon(
@@ -270,6 +270,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             TextButton(
               onPressed: () async {
                 await PreferencesService.setUsername(controller.text);
+                if (!mounted) return;
                 setState(() {
                   _username = controller.text;
                 });
@@ -296,6 +297,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('Light'),
                 onTap: () async {
                   await PreferencesService.setThemeMode('light');
+                  if (!mounted) return;
                   setState(() {
                     _themeMode = 'light';
                   });
@@ -307,6 +309,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('Dark'),
                 onTap: () async {
                   await PreferencesService.setThemeMode('dark');
+                  if (!mounted) return;
                   setState(() {
                     _themeMode = 'dark';
                   });
@@ -334,6 +337,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('English'),
                 onTap: () async {
                   await PreferencesService.setLanguage('English');
+                  if (!mounted) return;
                   setState(() {
                     _language = 'English';
                   });
@@ -344,6 +348,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('Kinyarwanda'),
                 onTap: () async {
                   await PreferencesService.setLanguage('Kinyarwanda');
+                  if (!mounted) return;
                   setState(() {
                     _language = 'Kinyarwanda';
                   });
@@ -381,7 +386,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           borderRadius: BorderRadius.circular(AppConstants.cardRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -393,8 +398,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isLogout
-                    ? Colors.red.withOpacity(0.1)
-                    : AppConstants.primaryPurple.withOpacity(0.1),
+                    ? Colors.red.withValues(alpha: 0.1)
+                    : AppConstants.primaryPurple.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -437,7 +442,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(AppConstants.cardRadius),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -448,7 +453,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppConstants.primaryPurple.withOpacity(0.1),
+              color: AppConstants.primaryPurple.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: AppConstants.primaryPurple, size: 24),

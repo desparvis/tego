@@ -14,7 +14,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  int _selectedIndex = 3; // Settings tab is selected
   String _username = 'Username';
   String _themeMode = 'light';
   String _language = 'English';
@@ -469,7 +468,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppConstants.primaryPurple,
+            activeThumbColor: AppConstants.primaryPurple,
           ),
         ],
       ),

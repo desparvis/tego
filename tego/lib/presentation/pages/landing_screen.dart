@@ -12,8 +12,6 @@ class LandingScreen extends StatefulWidget {
 }
 
 class _LandingScreenState extends State<LandingScreen> {
-  // Tracks which tab is selected (0 = Home)
-  int _selectedIndex = 0;
   String _username = 'Username';
 
   @override

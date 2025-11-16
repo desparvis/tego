@@ -17,7 +17,6 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
   final _amountController = TextEditingController();
   final _dateController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  int _selectedIndex = 2; // Add tab is selected
 
   @override
   void initState() {

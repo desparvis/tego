@@ -36,10 +36,12 @@ dependencies:
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.2.2
   # Firebase packages (add as needed for auth, firestore, analytics)
-  firebase_core: ^2.12.0
-  firebase_auth: ^4.6.0
-  cloud_firestore: ^4.8.0
-  firebase_analytics: ^10.5.0
+  firebase_core: ^4.2.1
+  firebase_auth: ^6.1.2
+  cloud_firestore: ^6.1.0
+  firebase_analytics: ^12.0.4
+  js: ^0.7.2
+  google_sign_in: ^6.1.0
 
 dev_dependencies:
   flutter_test:

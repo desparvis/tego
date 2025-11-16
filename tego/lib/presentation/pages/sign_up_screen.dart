@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../core/utils/auth_service.dart';
 import 'sign_in_screen.dart';
 import 'landing_screen.dart';
 import '../../core/constants/app_constants.dart';
@@ -40,24 +41,45 @@ class _SignUpScreenState extends State<SignUpScreen> {
         email: email,
         password: password,
       );
-      // ignore: use_build_context_synchronously
+      if (!mounted) return;
       Navigator.of(context).pop(); // remove dialog
-      // ignore: use_build_context_synchronously
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LandingScreen()),
       );
     } on FirebaseAuthException catch (e) {
-      Navigator.of(context).pop();
-      final message = e.message ?? 'Sign up failed';
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      if (mounted) {
+        Navigator.of(context).pop();
+        final message = e.message ?? 'Sign up failed';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
     } catch (e) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sign up failed')));
+      }
+    }
+  }
+
+  Future<void> _performGoogleSignUp() async {
+    // For Google, sign-in and sign-up are the same flow.
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final result = await AuthService.signInWithGoogle();
+    if (!mounted) return;
+    Navigator.of(context).pop(); // dismiss
+
+    if (result != null && result.user != null) {
+      Navigator.pushReplacement(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Sign up failed')));
+        MaterialPageRoute(builder: (context) => const LandingScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Google sign up cancelled or failed')));
     }
   }
 
@@ -125,13 +147,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         // Form Fields
                         Column(
                           children: [
-                            // Username Field
+                            // Email Field
                             CustomTextField(
-                              placeholder: 'Username',
+                              placeholder: 'Email',
                               controller: _usernameController,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter username';
+                                  return 'Please enter email';
                                 }
                                 return null;
                               },
@@ -159,6 +181,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                         // Sign Up Button
                         CustomButton(text: 'Sign Up', onPressed: _signUp),
+
+                        const SizedBox(height: 12),
+
+                        // Google Sign-Up (same as sign in)
+                        CustomButton(
+                          text: 'Sign up with Google',
+                          onPressed: _performGoogleSignUp,
+                          backgroundColor: Colors.white,
+                          textColor: AppConstants.textDark,
+                        ),
 
                         // Sign In Link
                         GestureDetector(

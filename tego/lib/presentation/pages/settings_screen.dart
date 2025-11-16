@@ -49,9 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           content: const Text(
             'Are you sure you want to logout?',
-            style: TextStyle(
-              fontFamily: AppConstants.fontFamily,
-            ),
+            style: TextStyle(fontFamily: AppConstants.fontFamily),
           ),
           actions: [
             TextButton(
@@ -104,90 +102,95 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             // Custom Header
             _buildHeader(),
-            
-            // Main Content
+
+            // Main Content (scrollable)
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(AppConstants.defaultPadding),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    
-                    // Settings Title in Purple Box
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 20,
-                        horizontal: 24,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppConstants.primaryPurple,
-                        borderRadius: BorderRadius.circular(AppConstants.cardRadius),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Settings',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontFamily: AppConstants.fontFamily,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 20),
+
+                      // Settings Title in Purple Box
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 20,
+                          horizontal: 24,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppConstants.primaryPurple,
+                          borderRadius: BorderRadius.circular(
+                            AppConstants.cardRadius,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'Settings',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontFamily: AppConstants.fontFamily,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 30),
-                    
-                    // Settings Options
-                    _buildSettingsOption(
-                      icon: Icons.person,
-                      title: 'Username: $_username',
-                      onTap: _editUsername,
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    _buildSettingsOption(
-                      icon: Icons.palette,
-                      title: 'Theme: $_themeMode',
-                      onTap: _changeTheme,
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    _buildSettingsOption(
-                      icon: Icons.language,
-                      title: 'Language: $_language',
-                      onTap: _changeLanguage,
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    _buildToggleOption(
-                      icon: Icons.notifications,
-                      title: 'Notifications',
-                      value: _notificationsEnabled,
-                      onChanged: _toggleNotifications,
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    _buildSettingsOption(
-                      icon: Icons.logout,
-                      title: 'Logout',
-                      onTap: _logout,
-                      isLogout: true,
-                    ),
-                    
-                    const Spacer(),
-                  ],
+
+                      const SizedBox(height: 30),
+
+                      // Settings Options
+                      _buildSettingsOption(
+                        icon: Icons.person,
+                        title: 'Username: $_username',
+                        onTap: _editUsername,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      _buildSettingsOption(
+                        icon: Icons.palette,
+                        title: 'Theme: $_themeMode',
+                        onTap: _changeTheme,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      _buildSettingsOption(
+                        icon: Icons.language,
+                        title: 'Language: $_language',
+                        onTap: _changeLanguage,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      _buildToggleOption(
+                        icon: Icons.notifications,
+                        title: 'Notifications',
+                        value: _notificationsEnabled,
+                        onChanged: _toggleNotifications,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      _buildSettingsOption(
+                        icon: Icons.logout,
+                        title: 'Logout',
+                        onTap: _logout,
+                        isLogout: true,
+                      ),
+
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
-        
+
         // Bottom Navigation
         bottomNavigationBar: const BottomNavigationWidget(currentIndex: 3),
       ),
@@ -373,10 +376,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          vertical: 20,
-          horizontal: 20,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppConstants.cardRadius),
@@ -393,7 +393,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isLogout 
+                color: isLogout
                     ? Colors.red.withOpacity(0.1)
                     : AppConstants.primaryPurple.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
@@ -416,18 +416,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey[400],
-              size: 16,
-            ),
+            Icon(Icons.arrow_forward_ios, color: Colors.grey[400], size: 16),
           ],
         ),
       ),
     );
   }
-
-
 
   // Toggle Option Widget
   Widget _buildToggleOption({
@@ -438,10 +432,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        vertical: 20,
-        horizontal: 20,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppConstants.cardRadius),
@@ -461,11 +452,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: AppConstants.primaryPurple.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              color: AppConstants.primaryPurple,
-              size: 24,
-            ),
+            child: Icon(icon, color: AppConstants.primaryPurple, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(

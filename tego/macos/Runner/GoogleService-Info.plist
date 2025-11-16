@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>285822024847-gbv283uq32oep4gu27vghctk58oecq71.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.285822024847-gbv283uq32oep4gu27vghctk58oecq71</string>
+	<key>API_KEY</key>
+	<string>AIzaSyARv-AbYJyP9Ns3U4PVzQnJQJ5U5Xe19eA</string>
+	<key>GCM_SENDER_ID</key>
+	<string>285822024847</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.tego</string>
+	<key>PROJECT_ID</key>
+	<string>tego-d918b</string>
+	<key>STORAGE_BUCKET</key>
+	<string>tego-d918b.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:285822024847:ios:eef23662c9df12816e44fa</string>
+</dict>
+</plist>

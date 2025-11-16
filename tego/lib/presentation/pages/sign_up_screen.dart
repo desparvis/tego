@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'sign_in_screen.dart';
 import 'landing_screen.dart';
 import '../../core/constants/app_constants.dart';
@@ -20,17 +21,50 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _signUp() {
     if (_formKey.currentState!.validate()) {
+      _performSignUp();
+    }
+  }
+
+  Future<void> _performSignUp() async {
+    final email = _usernameController.text.trim();
+    final password = _passwordController.text;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pop(); // remove dialog
+      // ignore: use_build_context_synchronously
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LandingScreen()),
       );
+    } on FirebaseAuthException catch (e) {
+      Navigator.of(context).pop();
+      final message = e.message ?? 'Sign up failed';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    } catch (e) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Sign up failed')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return Scaffold(
       backgroundColor: AppConstants.backgroundWhite,
       body: SingleChildScrollView(
@@ -64,7 +98,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
               ),
-              
+
               // Form Section - Expanded to fill remaining space
               Expanded(
                 child: Padding(
@@ -87,7 +121,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             fontFamily: AppConstants.fontFamily,
                           ),
                         ),
-                        
+
                         // Form Fields
                         Column(
                           children: [
@@ -102,9 +136,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 return null;
                               },
                             ),
-                            
+
                             const SizedBox(height: 20),
-                            
+
                             // Password Field
                             CustomTextField(
                               placeholder: 'Password',
@@ -122,13 +156,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                           ],
                         ),
-                        
+
                         // Sign Up Button
-                        CustomButton(
-                          text: 'Sign Up',
-                          onPressed: _signUp,
-                        ),
-                        
+                        CustomButton(text: 'Sign Up', onPressed: _signUp),
+
                         // Sign In Link
                         GestureDetector(
                           onTap: () {

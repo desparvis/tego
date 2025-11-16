@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'sign_in_screen.dart';
 import '../../core/utils/preferences_service.dart';
 import '../widgets/bottom_navigation_widget.dart';
 
@@ -36,11 +38,21 @@ class _LandingScreenState extends State<LandingScreen> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await _signOut();
+            },
+            tooltip: 'Sign out',
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
               '9:30',
-              style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.9)),
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white.withOpacity(0.9),
+              ),
             ),
           ),
         ],
@@ -64,7 +76,10 @@ class _LandingScreenState extends State<LandingScreen> {
               // Big purple card with "21" and "+2 made today"
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 32,
+                  horizontal: 20,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF7430EB),
                   borderRadius: BorderRadius.circular(16),
@@ -151,6 +166,21 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
+  Future<void> _signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      // ignore: use_build_context_synchronously
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignInScreen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Sign out failed')));
+    }
+  }
+
   // === HELPER: Section Title (like "All time sales") ===
   Widget _buildSectionTitle(String title) {
     return Text(
@@ -232,6 +262,4 @@ class _LandingScreenState extends State<LandingScreen> {
       ),
     );
   }
-
-
 }

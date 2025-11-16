@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "285822024847",
+    "project_id": "tego-d918b",
+    "storage_bucket": "tego-d918b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:285822024847:android:811149d88011f30a6e44fa",
+        "android_client_info": {
+          "package_name": "com.example.tego"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuXNJ4GCpLttFxtC49QNHhX1Zli-hY9os"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

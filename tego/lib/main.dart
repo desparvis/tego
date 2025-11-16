@@ -1,11 +1,27 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'presentation/pages/splash_screen.dart';
 import 'core/utils/preferences_service.dart';
 import 'core/utils/theme_notifier.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase (if configured). On web, you should run
+  // `flutterfire configure` to generate `firebase_options.dart` and
+  // platform-specific configuration files (google-services.json /
+  // GoogleService-Info.plist). If initialization fails the error
+  // will be printed but app will continue to run.
+  try {
+    await Firebase.initializeApp();
+    // ignore: avoid_print
+    print('Firebase initialized');
+  } catch (e, st) {
+    // ignore: avoid_print
+    print('Firebase initialization failed: $e\n$st');
+  }
+
   await PreferencesService.init();
   runApp(const MyApp());
 }

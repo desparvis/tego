@@ -51,12 +51,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (mounted) {
         Navigator.of(context).pop();
         final message = e.message ?? 'Sign up failed';
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sign up failed')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Sign up failed')));
       }
     }
   }
@@ -79,7 +83,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         MaterialPageRoute(builder: (context) => const LandingScreen()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Google sign up cancelled or failed')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google sign up cancelled or failed')),
+      );
     }
   }
 

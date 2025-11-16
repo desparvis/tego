@@ -51,12 +51,16 @@ class _SignInScreenState extends State<SignInScreen> {
       if (mounted) {
         Navigator.of(context).pop();
         final message = e.message ?? 'Sign in failed';
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sign in failed')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Sign in failed')));
       }
     }
   }
@@ -79,7 +83,9 @@ class _SignInScreenState extends State<SignInScreen> {
       );
     } else {
       // If sign-in failed or was cancelled, show a simple message.
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Google sign in cancelled or failed')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Google sign in cancelled or failed')),
+      );
     }
   }
 

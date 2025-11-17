@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'sign_in_screen.dart';
@@ -13,17 +14,39 @@ class LandingScreen extends StatefulWidget {
 
 class _LandingScreenState extends State<LandingScreen> {
   String _username = 'Username';
+  String _timeString = '';
+  Timer? _timeTimer;
 
   @override
   void initState() {
     super.initState();
     _loadUsername();
+    _updateTime();
+    _timeTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _updateTime(),
+    );
   }
 
   void _loadUsername() {
+    final firebaseName = FirebaseAuth.instance.currentUser?.displayName;
+    final stored = PreferencesService.getUsername();
     setState(() {
-      _username = PreferencesService.getUsername();
+      _username = (firebaseName != null && firebaseName.isNotEmpty)
+          ? firebaseName
+          : (stored.isNotEmpty ? stored : 'User');
     });
+  }
+
+  void _updateTime() {
+    final now = DateTime.now();
+    final hh = now.hour.toString().padLeft(2, '0');
+    final mm = now.minute.toString().padLeft(2, '0');
+    if (mounted) {
+      setState(() {
+        _timeString = '$hh:$mm';
+      });
+    }
   }
 
   @override
@@ -31,9 +54,37 @@ class _LandingScreenState extends State<LandingScreen> {
     return Scaffold(
       // Top App Bar — shows username and time
       appBar: AppBar(
-        title: Text(
-          _username,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        title: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.white24,
+              child: Text(
+                _getInitials(_username),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _username,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Welcome back',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         actions: [
           IconButton(
@@ -46,10 +97,10 @@ class _LandingScreenState extends State<LandingScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              '9:30',
+              _timeString,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white.withValues(alpha: 0.9),
+                color: Colors.white.withOpacity(0.9),
               ),
             ),
           ),
@@ -67,6 +118,25 @@ class _LandingScreenState extends State<LandingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // === WELCOME MESSAGE ===
+              Text(
+                'Welcome back, $_username!',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Here’s your dashboard for today',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.black.withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(height: 14),
+
               // === ALL TIME SALES CARD (FULL WIDTH) ===
               _buildSectionTitle('All time sales'),
               const SizedBox(height: 12),
@@ -178,6 +248,19 @@ class _LandingScreenState extends State<LandingScreen> {
         context,
       ).showSnackBar(const SnackBar(content: Text('Sign out failed')));
     }
+  }
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return '';
+    final parts = name.trim().split(RegExp(r"\s+"));
+    if (parts.length == 1) return parts[0].substring(0, 1).toUpperCase();
+    return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
+  }
+
+  @override
+  void dispose() {
+    _timeTimer?.cancel();
+    super.dispose();
   }
 
   // === HELPER: Section Title (like "All time sales") ===

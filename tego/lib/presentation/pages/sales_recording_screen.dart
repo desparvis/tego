@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/services/firestore_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'landing_screen.dart';
+
 import '../../core/constants/app_constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
@@ -57,10 +57,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
       );
 
       // Navigate back to dashboard
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LandingScreen()),
-      );
+      Navigator.pop(context);
     }
   }
 
@@ -252,14 +249,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
           child: Row(
             children: [
               GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LandingScreen(),
-                    ),
-                  );
-                },
+                onTap: () => Navigator.pop(context),
                 child: const Icon(
                   Icons.arrow_back,
                   color: Colors.white,

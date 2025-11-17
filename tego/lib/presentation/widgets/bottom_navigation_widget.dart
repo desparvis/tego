@@ -3,6 +3,8 @@ import '../../core/constants/app_constants.dart';
 import '../pages/landing_screen.dart';
 import '../pages/sales_list_screen.dart';
 import '../pages/sales_recording_screen.dart';
+import '../pages/expense_recording_screen.dart';
+import '../pages/expense_list_screen.dart';
 import '../pages/settings_screen.dart';
 
 class BottomNavigationWidget extends StatelessWidget {
@@ -29,6 +31,12 @@ class BottomNavigationWidget extends StatelessWidget {
         break;
       case 3:
         screen = const SettingsScreen();
+        break;
+      case 4:
+        screen = const ExpenseRecordingScreen();
+        break;
+      case 5:
+        screen = const ExpenseListScreen();
         break;
       default:
         return;
@@ -59,7 +67,7 @@ class BottomNavigationWidget extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        type: BottomNavigationBarType.fixed,
+        type: BottomNavigationBarType.shifting,
         selectedLabelStyle: const TextStyle(
           fontFamily: AppConstants.fontFamily,
           fontWeight: FontWeight.w600,
@@ -74,12 +82,12 @@ class BottomNavigationWidget extends StatelessWidget {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Sales list',
+            icon: Icon(Icons.trending_up),
+            label: 'Sales',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_circle, size: 32),
-            label: 'Add',
+            label: 'Add Sale',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

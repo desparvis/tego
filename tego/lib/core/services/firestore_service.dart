@@ -93,6 +93,23 @@ class FirestoreService {
     return _db.collection(collectionPath).doc(documentId).update(fields);
   }
 
+  // Get a collection snapshot (one-shot, not realtime).
+  Future<QuerySnapshot> getCollection(
+    String collectionPath, {
+    int? limit,
+    String? orderBy,
+    bool descending = false,
+  }) async {
+    Query<Map<String, dynamic>> query = _db.collection(collectionPath);
+    if (orderBy != null) {
+      query = query.orderBy(orderBy, descending: descending);
+    }
+    if (limit != null) {
+      query = query.limit(limit);
+    }
+    return await query.get();
+  }
+
   // Example helper to create a user document after sign-up.
   Future<void> createUserDoc(String uid, Map<String, dynamic> data) {
     return setDocument('users', uid, data);

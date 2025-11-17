@@ -4,8 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/services/firestore_service.dart';
 import 'sign_in_screen.dart';
+import 'expense_recording_screen.dart';
+import 'expense_list_screen.dart';
 import '../../core/utils/preferences_service.dart';
 import '../widgets/bottom_navigation_widget.dart';
+import '../widgets/floating_action_menu.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -330,20 +333,36 @@ class _LandingScreenState extends State<LandingScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: _buildStatCard(
-                      title: 'Today\'s expenses',
-                      value: '5,231 RWF',
-                      color: const Color(0xFFD4A4EB),
-                      icon: Icons.trending_down,
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ExpenseListScreen(),
+                        ),
+                      ),
+                      child: _buildStatCard(
+                        title: 'Today\'s expenses',
+                        value: '5,231 RWF',
+                        color: const Color(0xFFD4A4EB),
+                        icon: Icons.trending_down,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _buildStatCard(
-                      title: 'Balance',
-                      value: '21,000 RWF',
-                      color: const Color(0xFFF4A4A4),
-                      icon: Icons.account_balance_wallet,
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ExpenseRecordingScreen(),
+                        ),
+                      ),
+                      child: _buildStatCard(
+                        title: 'Add Expense',
+                        value: 'Tap to add',
+                        color: const Color(0xFFF4A4A4),
+                        icon: Icons.add,
+                      ),
                     ),
                   ),
                 ],
@@ -375,6 +394,9 @@ class _LandingScreenState extends State<LandingScreen> {
 
       // Bottom Navigation
       bottomNavigationBar: const BottomNavigationWidget(currentIndex: 0),
+      
+      // Floating Action Menu
+      floatingActionButton: const FloatingActionMenu(),
     );
   }
 

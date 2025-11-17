@@ -11,10 +11,12 @@ class AuthService {
         final provider = GoogleAuthProvider();
         return await FirebaseAuth.instance.signInWithPopup(provider);
       }
-
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) {
         // User cancelled the sign-in
+        // Log cancellation for debugging
+        // ignore: avoid_print
+        print('GoogleSignIn: user cancelled (googleUser == null)');
         return null;
       }
 
@@ -25,9 +27,13 @@ class AuthService {
       );
 
       return await FirebaseAuth.instance.signInWithCredential(credential);
-    } on FirebaseAuthException catch (_) {
+    } on FirebaseAuthException catch (e) {
+      // ignore: avoid_print
+      print('GoogleSignIn: FirebaseAuthException during sign-in: $e');
       return null;
-    } catch (_) {
+    } catch (e) {
+      // ignore: avoid_print
+      print('GoogleSignIn: unexpected error during sign-in: $e');
       return null;
     }
   }

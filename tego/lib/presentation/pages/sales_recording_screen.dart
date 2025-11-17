@@ -44,6 +44,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
           'date': date,
           'timestamp': FieldValue.serverTimestamp(),
         });
+        // Stats are maintained by Cloud Functions (server-side); do not update user stats from client.
       }
 
       // Show success message

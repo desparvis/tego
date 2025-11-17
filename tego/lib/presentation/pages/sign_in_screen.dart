@@ -31,6 +31,8 @@ class _SignInScreenState extends State<SignInScreen> {
   Future<void> _performSignIn() async {
     final email = _usernameController.text.trim();
     final password = _passwordController.text;
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
 
     showDialog<void>(
       context: context,
@@ -54,30 +56,28 @@ class _SignInScreenState extends State<SignInScreen> {
       }
 
       if (!mounted) return;
-      Navigator.of(context).pop(); // remove dialog
-      Navigator.pushReplacement(
-        context,
+      navigator.pop(); // remove dialog
+      navigator.pushReplacement(
         MaterialPageRoute(builder: (context) => const LandingScreen()),
       );
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        Navigator.of(context).pop();
+        navigator.pop();
         final message = e.message ?? 'Sign in failed';
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        messenger.showSnackBar(SnackBar(content: Text(message)));
       }
     } catch (e) {
       if (mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Sign in failed')));
+        navigator.pop();
+        messenger.showSnackBar(const SnackBar(content: Text('Sign in failed')));
       }
     }
   }
 
   Future<void> _performGoogleSignIn() async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -94,16 +94,14 @@ class _SignInScreenState extends State<SignInScreen> {
         'displayName': result.user!.displayName ?? '',
         'lastSignIn': FieldValue.serverTimestamp(),
       });
-
-      Navigator.of(context).pop(); // dismiss progress
-      Navigator.pushReplacement(
-        context,
+      navigator.pop(); // dismiss progress
+      navigator.pushReplacement(
         MaterialPageRoute(builder: (context) => const LandingScreen()),
       );
     } else {
       // If sign-in failed or was cancelled, show a simple message.
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
+      navigator.pop();
+      messenger.showSnackBar(
         const SnackBar(content: Text('Google sign in cancelled or failed')),
       );
     }

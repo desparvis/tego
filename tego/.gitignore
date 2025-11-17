@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Ignore node_modules in functions
+functions/node_modules/
+
+# Firebase emulator and local caches
+.firebase/
+
+# Flutter generated plugin lock files
+.flutter-plugins-dependencies*

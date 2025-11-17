@@ -31,6 +31,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _performSignUp() async {
     final email = _usernameController.text.trim();
     final password = _passwordController.text;
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
 
     showDialog<void>(
       context: context,
@@ -54,31 +56,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
 
       if (!mounted) return;
-      Navigator.of(context).pop(); // remove dialog
-      Navigator.pushReplacement(
-        context,
+      navigator.pop(); // remove dialog
+      navigator.pushReplacement(
         MaterialPageRoute(builder: (context) => const LandingScreen()),
       );
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        Navigator.of(context).pop();
+        navigator.pop();
         final message = e.message ?? 'Sign up failed';
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        messenger.showSnackBar(SnackBar(content: Text(message)));
       }
     } catch (e) {
       if (mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Sign up failed')));
+        navigator.pop();
+        messenger.showSnackBar(const SnackBar(content: Text('Sign up failed')));
       }
     }
   }
 
   Future<void> _performGoogleSignUp() async {
     // For Google, sign-in and sign-up are the same flow.
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -95,15 +95,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'displayName': result.user!.displayName ?? '',
         'createdAt': FieldValue.serverTimestamp(),
       });
-
-      Navigator.of(context).pop(); // dismiss
-      Navigator.pushReplacement(
-        context,
+      navigator.pop(); // dismiss
+      navigator.pushReplacement(
         MaterialPageRoute(builder: (context) => const LandingScreen()),
       );
     } else {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
+      navigator.pop();
+      messenger.showSnackBar(
         const SnackBar(content: Text('Google sign up cancelled or failed')),
       );
     }

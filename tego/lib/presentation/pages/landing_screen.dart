@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../core/services/firestore_service.dart';
 import 'sign_in_screen.dart';
 import '../../core/utils/preferences_service.dart';
 import '../widgets/bottom_navigation_widget.dart';
@@ -79,7 +81,7 @@ class _LandingScreenState extends State<LandingScreen> {
                   'Welcome back',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
               ],
@@ -100,7 +102,7 @@ class _LandingScreenState extends State<LandingScreen> {
               _timeString,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
             ),
           ),
@@ -132,7 +134,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 'Here’s your dashboard for today',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                 ),
               ),
               const SizedBox(height: 14),
@@ -141,44 +143,186 @@ class _LandingScreenState extends State<LandingScreen> {
               _buildSectionTitle('All time sales'),
               const SizedBox(height: 12),
 
-              // Big purple card with "21" and "+2 made today"
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 32,
-                  horizontal: 20,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF7430EB),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF7430EB).withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
+              // Big purple card showing aggregated sales from Firestore
+              StreamBuilder<QuerySnapshot>(
+                stream: (() {
+                  final user = FirebaseAuth.instance.currentUser;
+                  return (user == null)
+                      ? null
+                      : FirestoreService.instance.streamCollection(
+                          'users/${user.uid}/sales',
+                          limit: 1000,
+                        );
+                })(),
+                builder: (context, snapshot) {
+                  int totalCount = 0;
+                  int todayCount = 0;
+                  double totalAmount = 0.0;
+
+                  if (snapshot.hasData) {
+                    final docs = snapshot.data!.docs;
+                    totalCount = docs.length;
+                    final now = DateTime.now();
+                    for (final doc in docs) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      // amount may be stored as number
+                      final amt = (data['amount'] is num)
+                          ? (data['amount'] as num).toDouble()
+                          : double.tryParse('${data['amount']}') ?? 0.0;
+                      totalAmount += amt;
+
+                      DateTime? ts;
+                      if (data['timestamp'] != null &&
+                          data['timestamp'] is Timestamp) {
+                        ts = (data['timestamp'] as Timestamp).toDate();
+                      } else if (data['date'] != null &&
+                          data['date'] is String) {
+                        // fallback parsing dd-mm-yyyy
+                        try {
+                          final parts = (data['date'] as String).split('-');
+                          if (parts.length >= 3) {
+                            ts = DateTime(
+                              int.parse(parts[2]),
+                              int.parse(parts[1]),
+                              int.parse(parts[0]),
+                            );
+                          }
+                        } catch (_) {
+                          ts = null;
+                        }
+                      }
+
+                      if (ts != null &&
+                          ts.year == now.year &&
+                          ts.month == now.month &&
+                          ts.day == now.day) {
+                        todayCount += 1;
+                      }
+                    }
+                  }
+
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 32,
+                      horizontal: 20,
                     ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      '21',
-                      style: TextStyle(
-                        fontSize: 72,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7430EB),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF7430EB).withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '+2 made today',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
+                    child: Column(
+                      children: [
+                        // If a stats doc exists prefer that to live computation
+                        StreamBuilder<DocumentSnapshot?>(
+                          stream: (() {
+                            final user = FirebaseAuth.instance.currentUser;
+                            if (user == null) return null;
+                            return FirestoreService.instance.streamDocument(
+                              'users',
+                              user.uid,
+                            );
+                          })(),
+                          builder: (context, statsSnap) {
+                            if (statsSnap.hasData && statsSnap.data != null) {
+                              final stats =
+                                  statsSnap.data!.data()
+                                      as Map<String, dynamic>?;
+                              final count =
+                                  stats?['totalSalesCount'] ?? totalCount;
+                              final total =
+                                  stats?['totalAmount'] ?? totalAmount;
+                              return Column(
+                                children: [
+                                  Text(
+                                    '$count',
+                                    style: const TextStyle(
+                                      fontSize: 72,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '+$todayCount made today',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Total: ${((total is num) ? total.toDouble() : double.tryParse('$total') ?? 0).toStringAsFixed(0)} RWF',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+
+                            return Column(
+                              children: [
+                                Text(
+                                  '$totalCount',
+                                  style: const TextStyle(
+                                    fontSize: 72,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '+$todayCount made today',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Total: ${totalAmount.toStringAsFixed(0)} RWF',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '+$todayCount made today',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Total: ${totalAmount.toStringAsFixed(0)} RWF',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
               const SizedBox(height: 28),
 

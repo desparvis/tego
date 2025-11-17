@@ -256,6 +256,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) {
         final controller = TextEditingController(text: _username);
+        final navigator = Navigator.of(context);
         return AlertDialog(
           title: const Text('Edit Username'),
           content: TextField(
@@ -274,7 +275,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() {
                   _username = controller.text;
                 });
-                Navigator.pop(context);
+                navigator.pop();
               },
               child: const Text('Save'),
             ),
@@ -288,6 +289,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) {
+        final navigator = Navigator.of(context);
         return AlertDialog(
           title: const Text('Select Theme'),
           content: Column(
@@ -302,7 +304,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _themeMode = 'light';
                   });
                   ThemeNotifier().notifyThemeChanged();
-                  Navigator.pop(context);
+                  navigator.pop();
                 },
               ),
               ListTile(
@@ -314,7 +316,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _themeMode = 'dark';
                   });
                   ThemeNotifier().notifyThemeChanged();
-                  Navigator.pop(context);
+                  navigator.pop();
                 },
               ),
             ],
@@ -328,6 +330,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) {
+        final navigator = Navigator.of(context);
         return AlertDialog(
           title: const Text('Select Language'),
           content: Column(
@@ -341,7 +344,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   setState(() {
                     _language = 'English';
                   });
-                  Navigator.pop(context);
+                  navigator.pop();
                 },
               ),
               ListTile(
@@ -352,7 +355,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   setState(() {
                     _language = 'Kinyarwanda';
                   });
-                  Navigator.pop(context);
+                  navigator.pop();
                 },
               ),
             ],
@@ -364,6 +367,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _toggleNotifications(bool value) async {
     await PreferencesService.setNotificationsEnabled(value);
+    if (!mounted) return;
     setState(() {
       _notificationsEnabled = value;
     });

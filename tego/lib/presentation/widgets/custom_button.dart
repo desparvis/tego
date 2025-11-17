@@ -23,7 +23,7 @@ class CustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width ?? double.infinity,
-      height: height ?? 50,
+      height: height ?? 48, // Material Design minimum tap target
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(

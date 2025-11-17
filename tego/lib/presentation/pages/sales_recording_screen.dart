@@ -8,6 +8,7 @@ import '../../core/constants/app_constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/bottom_navigation_widget.dart';
+import '../widgets/responsive_layout.dart';
 
 class SalesRecordingScreen extends StatefulWidget {
   const SalesRecordingScreen({super.key});
@@ -112,110 +113,129 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                 ),
                 child: Form(
                   key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Page Title - Purple Box
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 20,
-                          horizontal: 24,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppConstants.primaryPurple,
-                          borderRadius: BorderRadius.circular(
-                            AppConstants.cardRadius,
-                          ),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Sales Recording',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: AppConstants.fontFamily,
-                            ),
-                          ),
-                        ),
+                  child: ResponsiveLayout(
+                    mobile: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: _buildFormContent(context),
+                    ),
+                    tablet: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveLayout.getScreenWidth(context) * 0.1,
                       ),
-
-                      // Form Fields Section
-                      Column(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Sale Amount Field
-                          Text(
-                            'Sale Amount',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).primaryColor,
-                              fontFamily: AppConstants.fontFamily,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          CustomTextField(
-                            placeholder: 'Enter amount in RWF',
-                            controller: _amountController,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter sale amount';
-                              }
-                              if (double.tryParse(value) == null) {
-                                return 'Please enter a valid amount';
-                              }
-                              return null;
-                            },
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Sale Date Field
-                          Text(
-                            'Sale Date',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).primaryColor,
-                              fontFamily: AppConstants.fontFamily,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          GestureDetector(
-                            onTap: _selectDate,
-                            child: AbsorbPointer(
-                              child: CustomTextField(
-                                placeholder: 'Select date',
-                                controller: _dateController,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please select sale date';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
+                        children: _buildFormContent(context),
                       ),
-
-                      // Add Sale Button
-                      CustomButton(text: 'Add Sale', onPressed: _addSale),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
           ],
         ),
-
-        // Bottom Navigation
         bottomNavigationBar: const BottomNavigationWidget(currentIndex: 2),
       ),
     );
+  }
+
+  List<Widget> _buildFormContent(BuildContext context) {
+    final isSmallScreen = ResponsiveLayout.isSmallScreen(context);
+    final isLargeScreen = ResponsiveLayout.isLargeScreen(context);
+    
+    return [
+      // Page Title - Purple Box
+      Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(
+          vertical: isSmallScreen ? 16 : (isLargeScreen ? 24 : 20),
+          horizontal: isSmallScreen ? 16 : (isLargeScreen ? 32 : 24),
+        ),
+        decoration: BoxDecoration(
+          color: AppConstants.primaryPurple,
+          borderRadius: BorderRadius.circular(
+            AppConstants.cardRadius,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            'Sales Recording',
+            style: TextStyle(
+              fontSize: isSmallScreen ? 20 : (isLargeScreen ? 28 : 24),
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontFamily: AppConstants.fontFamily,
+            ),
+          ),
+        ),
+      ),
+
+      // Form Fields Section
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Sale Amount Field
+          Text(
+            'Sale Amount',
+            style: TextStyle(
+              fontSize: isSmallScreen ? 14 : (isLargeScreen ? 18 : 16),
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).primaryColor,
+              fontFamily: AppConstants.fontFamily,
+            ),
+          ),
+          SizedBox(height: isSmallScreen ? 6 : 8),
+          CustomTextField(
+            placeholder: 'Enter amount in RWF',
+            controller: _amountController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter sale amount';
+              }
+              if (double.tryParse(value) == null) {
+                return 'Please enter a valid amount';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: isSmallScreen ? 16 : (isLargeScreen ? 32 : 24)),
+          // Sale Date Field
+          Text(
+            'Sale Date',
+            style: TextStyle(
+              fontSize: isSmallScreen ? 14 : (isLargeScreen ? 18 : 16),
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).primaryColor,
+              fontFamily: AppConstants.fontFamily,
+            ),
+          ),
+          SizedBox(height: isSmallScreen ? 6 : 8),
+          GestureDetector(
+            onTap: _selectDate,
+            child: AbsorbPointer(
+              child: CustomTextField(
+                placeholder: 'Select date',
+                controller: _dateController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select sale date';
+                  }
+                  return null;
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+
+      // Add Sale Button
+      CustomButton(
+        text: 'Add Sale',
+        onPressed: _addSale,
+        height: isSmallScreen ? 44 : (isLargeScreen ? 52 : 48),
+      ),
+    ];
   }
 
   // Custom Header

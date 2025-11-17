@@ -97,7 +97,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
         statusBarBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppConstants.backgroundWhite,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Column(
           children: [
             // Custom Header
@@ -147,12 +147,12 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Sale Amount Field
-                          const Text(
+                          Text(
                             'Sale Amount',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppConstants.primaryPurple,
+                              color: Theme.of(context).primaryColor,
                               fontFamily: AppConstants.fontFamily,
                             ),
                           ),
@@ -174,12 +174,12 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                           const SizedBox(height: 24),
 
                           // Sale Date Field
-                          const Text(
+                          Text(
                             'Sale Date',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppConstants.primaryPurple,
+                              color: Theme.of(context).primaryColor,
                               fontFamily: AppConstants.fontFamily,
                             ),
                           ),

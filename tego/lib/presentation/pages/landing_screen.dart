@@ -117,7 +117,7 @@ class _LandingScreenState extends State<LandingScreen> {
       // Main Body — full screen, scrollable
       body: Container(
         width: double.infinity,
-        color: Colors.grey[50],
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -129,7 +129,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
               const SizedBox(height: 6),
@@ -137,7 +137,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 'Here’s your dashboard for today',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.black.withValues(alpha: 0.6),
+                  color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
                 ),
               ),
               const SizedBox(height: 14),
@@ -433,10 +433,10 @@ class _LandingScreenState extends State<LandingScreen> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,
-        color: Colors.black87,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
       ),
     );
   }

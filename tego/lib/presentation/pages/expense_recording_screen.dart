@@ -98,7 +98,7 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
         statusBarBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppConstants.backgroundWhite,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Column(
           children: [
             _buildHeader(),
@@ -141,12 +141,12 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Expense Amount',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppConstants.primaryPurple,
+                              color: Theme.of(context).primaryColor,
                               fontFamily: AppConstants.fontFamily,
                             ),
                           ),
@@ -165,12 +165,12 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          const Text(
+                          Text(
                             'Category',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppConstants.primaryPurple,
+                              color: Theme.of(context).primaryColor,
                               fontFamily: AppConstants.fontFamily,
                             ),
                           ),
@@ -195,12 +195,12 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          const Text(
+                          Text(
                             'Description',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppConstants.primaryPurple,
+                              color: Theme.of(context).primaryColor,
                               fontFamily: AppConstants.fontFamily,
                             ),
                           ),
@@ -216,12 +216,12 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                             },
                           ),
                           const SizedBox(height: 16),
-                          const Text(
+                          Text(
                             'Expense Date',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppConstants.primaryPurple,
+                              color: Theme.of(context).primaryColor,
                               fontFamily: AppConstants.fontFamily,
                             ),
                           ),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../core/services/firestore_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'landing_screen.dart';
 import '../../core/constants/app_constants.dart';
 import '../widgets/custom_button.dart';
@@ -31,6 +34,18 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
 
   void _addSale() {
     if (_formKey.currentState!.validate()) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final amount =
+            double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0.0;
+        final date = _dateController.text;
+        FirestoreService.instance.addDocument('users/${user.uid}/sales', {
+          'amount': amount,
+          'date': date,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -38,7 +53,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
           backgroundColor: AppConstants.primaryPurple,
         ),
       );
-      
+
       // Navigate back to dashboard
       Navigator.pushReplacement(
         context,
@@ -64,7 +79,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
         );
       },
     );
-    
+
     if (picked != null) {
       setState(() {
         _dateController.text = _formatDate(picked);
@@ -86,7 +101,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
           children: [
             // Custom Header
             _buildHeader(),
-            
+
             // Main Content
             Expanded(
               child: Padding(
@@ -109,7 +124,9 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: AppConstants.primaryPurple,
-                          borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+                          borderRadius: BorderRadius.circular(
+                            AppConstants.cardRadius,
+                          ),
                         ),
                         child: const Center(
                           child: Text(
@@ -123,7 +140,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                           ),
                         ),
                       ),
-                      
+
                       // Form Fields Section
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,9 +169,9 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                               return null;
                             },
                           ),
-                          
+
                           const SizedBox(height: 24),
-                          
+
                           // Sale Date Field
                           const Text(
                             'Sale Date',
@@ -183,12 +200,9 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                           ),
                         ],
                       ),
-                      
+
                       // Add Sale Button
-                      CustomButton(
-                        text: 'Add Sale',
-                        onPressed: _addSale,
-                      ),
+                      CustomButton(text: 'Add Sale', onPressed: _addSale),
                     ],
                   ),
                 ),
@@ -196,7 +210,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
             ),
           ],
         ),
-        
+
         // Bottom Navigation
         bottomNavigationBar: const BottomNavigationWidget(currentIndex: 2),
       ),
@@ -220,7 +234,9 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                 onTap: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const LandingScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const LandingScreen(),
+                    ),
                   );
                 },
                 child: const Icon(
@@ -245,8 +261,6 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
       ),
     );
   }
-
-
 
   @override
   void dispose() {

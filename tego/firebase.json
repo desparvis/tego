@@ -1,1 +1,59 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"tego-d918b","appId":"1:285822024847:android:811149d88011f30a6e44fa","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"tego-d918b","appId":"1:285822024847:ios:eef23662c9df12816e44fa","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"tego-d918b","appId":"1:285822024847:ios:eef23662c9df12816e44fa","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"tego-d918b","configurations":{"android":"1:285822024847:android:811149d88011f30a6e44fa","ios":"1:285822024847:ios:eef23662c9df12816e44fa","macos":"1:285822024847:ios:eef23662c9df12816e44fa","web":"1:285822024847:web:4129c7ffb7b05b916e44fa","windows":"1:285822024847:web:19e999f3551731826e44fa"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "tego-d918b",
+          "appId": "1:285822024847:android:811149d88011f30a6e44fa",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "tego-d918b",
+          "appId": "1:285822024847:ios:eef23662c9df12816e44fa",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "tego-d918b",
+          "appId": "1:285822024847:ios:eef23662c9df12816e44fa",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "tego-d918b",
+          "configurations": {
+            "android": "1:285822024847:android:811149d88011f30a6e44fa",
+            "ios": "1:285822024847:ios:eef23662c9df12816e44fa",
+            "macos": "1:285822024847:ios:eef23662c9df12816e44fa",
+            "web": "1:285822024847:web:4129c7ffb7b05b916e44fa",
+            "windows": "1:285822024847:web:19e999f3551731826e44fa"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": {
+    "site": "tego-d918b",
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

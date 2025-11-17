@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../core/services/firestore_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/bottom_navigation_widget.dart';
 
 class SalesListScreen extends StatelessWidget {
   const SalesListScreen({super.key});
 
-  // Sample sales data (replace with API later)
-  final List<Map<String, String>> _sales = const [
-    {'amount': '4,501 rwf', 'date': '18-12-2025'},
-    {'amount': '12,010 rwf', 'date': '17-12-2025'},
-    {'amount': '5,000 rwf', 'date': '16-12-2025'},
-    {'amount': '4,870 rwf', 'date': '15-12-2025'},
-    {'amount': '1,500 rwf', 'date': '14-12-2025'},
-  ];
+  // We'll stream sales for the current user from Firestore.
 
   @override
   Widget build(BuildContext context) {
@@ -86,46 +82,76 @@ class SalesListScreen extends StatelessWidget {
             ),
           ),
 
-          // SCROLLABLE LIST — this part scrolls
+          // SCROLLABLE LIST — stream from Firestore
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              itemCount: _sales.length,
-              itemBuilder: (context, index) {
-                final sale = _sales[index];
-                return Column(
-                  children: [
-                    // Each Sale Row
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              sale['amount']!,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              sale['date']!,
-                              textAlign: TextAlign.right,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ],
+            child: Builder(
+              builder: (context) {
+                final user = FirebaseAuth.instance.currentUser;
+                if (user == null) {
+                  return const Center(
+                    child: Text('Please sign in to view sales'),
+                  );
+                }
+
+                return StreamBuilder<QuerySnapshot>(
+                  stream: FirestoreService.instance.streamCollection(
+                    'users/${user.uid}/sales',
+                    limit: 200,
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return const Center(child: Text('Failed to load sales'));
+                    }
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final docs = snapshot.data!.docs;
+                    if (docs.isEmpty) {
+                      return const Center(child: Text('No sales recorded'));
+                    }
+
+                    return ListView.separated(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
                       ),
-                    ),
-                    // Divider line between rows
-                    const Divider(height: 1, color: Colors.grey),
-                  ],
+                      itemCount: docs.length,
+                      separatorBuilder: (_, __) =>
+                          const Divider(height: 1, color: Colors.grey),
+                      itemBuilder: (context, index) {
+                        final data = docs[index].data() as Map<String, dynamic>;
+                        final amount = data['amount']?.toString() ?? '';
+                        final date = data['date']?.toString() ?? '';
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  amount,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  date,
+                                  textAlign: TextAlign.right,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
                 );
               },
             ),
@@ -137,6 +163,4 @@ class SalesListScreen extends StatelessWidget {
       bottomNavigationBar: const BottomNavigationWidget(currentIndex: 1),
     );
   }
-
-
 }

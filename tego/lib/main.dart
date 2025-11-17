@@ -1,7 +1,10 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'presentation/pages/splash_screen.dart';
 import 'core/utils/preferences_service.dart';
 import 'core/utils/theme_notifier.dart';
@@ -17,6 +20,13 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    // In debug/dev, point to local emulators if desired.
+    if (!kReleaseMode) {
+      // Firestore emulator default port is 8080, Auth emulator 9099 — adjust if you use different ports.
+      FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+      FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+    }
+
     // ignore: avoid_print
     print('Firebase initialized with DefaultFirebaseOptions');
   } catch (e, st) {

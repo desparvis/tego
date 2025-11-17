@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../core/services/firestore_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/utils/auth_service.dart';
 import 'sign_in_screen.dart';
 import 'landing_screen.dart';
@@ -37,10 +39,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      // Create or merge the user document in Firestore
+      if (cred.user != null) {
+        await FirestoreService.instance.createUserDoc(cred.user!.uid, {
+          'email': cred.user!.email,
+          'displayName': cred.user!.displayName ?? '',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+
       if (!mounted) return;
       Navigator.of(context).pop(); // remove dialog
       Navigator.pushReplacement(
@@ -75,14 +87,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     final result = await AuthService.signInWithGoogle();
     if (!mounted) return;
-    Navigator.of(context).pop(); // dismiss
 
     if (result != null && result.user != null) {
+      // Ensure user doc exists (merge safe)
+      await FirestoreService.instance.createUserDoc(result.user!.uid, {
+        'email': result.user!.email,
+        'displayName': result.user!.displayName ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      Navigator.of(context).pop(); // dismiss
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LandingScreen()),
       );
     } else {
+      Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Google sign up cancelled or failed')),
       );

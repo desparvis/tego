@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/utils/auth_service.dart';
+import '../../core/services/firestore_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'landing_screen.dart';
 import 'sign_up_screen.dart';
 import '../../core/constants/app_constants.dart';
@@ -37,10 +39,20 @@ class _SignInScreenState extends State<SignInScreen> {
     );
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      // Ensure user document exists (merge safe)
+      if (cred.user != null) {
+        await FirestoreService.instance.createUserDoc(cred.user!.uid, {
+          'email': cred.user!.email,
+          'displayName': cred.user!.displayName ?? '',
+          'lastSignIn': FieldValue.serverTimestamp(),
+        });
+      }
+
       if (!mounted) return;
       Navigator.of(context).pop(); // remove dialog
       Navigator.pushReplacement(
@@ -74,15 +86,23 @@ class _SignInScreenState extends State<SignInScreen> {
 
     final result = await AuthService.signInWithGoogle();
     if (!mounted) return;
-    Navigator.of(context).pop(); // dismiss progress
 
     if (result != null && result.user != null) {
+      // Ensure user doc exists
+      await FirestoreService.instance.createUserDoc(result.user!.uid, {
+        'email': result.user!.email,
+        'displayName': result.user!.displayName ?? '',
+        'lastSignIn': FieldValue.serverTimestamp(),
+      });
+
+      Navigator.of(context).pop(); // dismiss progress
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LandingScreen()),
       );
     } else {
       // If sign-in failed or was cancelled, show a simple message.
+      Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Google sign in cancelled or failed')),
       );

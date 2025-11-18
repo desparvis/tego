@@ -6,6 +6,7 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../widgets/responsive_layout.dart';
+import '../widgets/bloc_status_indicator.dart';
 import '../bloc/sales_bloc.dart';
 
 class SalesRecordingScreen extends StatefulWidget {
@@ -31,17 +32,30 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
     return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
 
-  /// Handles form submission by dispatching event to BLoC
+  /// Handles form submission with advanced state management
   void _addSale() {
     if (_formKey.currentState!.validate()) {
       final amount = double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0.0;
       final date = _dateController.text;
       
-      // Dispatch event to BLoC - no business logic in UI
+      // Dispatch event to BLoC with optimistic UI updates
       context.read<SalesBloc>().add(AddSaleEvent(
         amount: amount,
         date: date,
       ));
+      
+      // Clear form immediately for better UX (optimistic update)
+      _amountController.clear();
+      _dateController.text = _formatDate(DateTime.now());
+    }
+  }
+  
+  /// Handles retry functionality for failed operations
+  void _retrySale() {
+    final currentState = context.read<SalesBloc>().state;
+    if (currentState is SalesError && currentState.isRetryable) {
+      // Reset state and allow user to retry
+      context.read<SalesBloc>().add(ResetSalesStateEvent());
     }
   }
 
@@ -85,16 +99,36 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
             if (state is SalesSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.message),
+                  content: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(state.message)),
+                    ],
+                  ),
                   backgroundColor: AppConstants.primaryPurple,
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
               Navigator.pop(context);
             } else if (state is SalesError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.error),
+                  content: Row(
+                    children: [
+                      const Icon(Icons.error, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(state.error)),
+                      if (state.isRetryable)
+                        TextButton(
+                          onPressed: _retrySale,
+                          child: const Text('RETRY', style: TextStyle(color: Colors.white)),
+                        ),
+                    ],
+                  ),
                   backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 5),
                 ),
               );
             }
@@ -265,15 +299,18 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              const Text(
-                'Sales Recording',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: AppConstants.fontFamily,
+              const Expanded(
+                child: Text(
+                  'Sales Recording',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: AppConstants.fontFamily,
+                  ),
                 ),
               ),
+              const BlocStatusIndicator(),
             ],
           ),
         ),

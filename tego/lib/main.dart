@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'presentation/pages/splash_screen.dart';
 import 'presentation/bloc/expense_bloc.dart';
 import 'presentation/bloc/sales_bloc.dart';
+import 'presentation/bloc/app_state_bloc.dart';
 import 'data/repositories/sales_repository_impl.dart';
 import 'domain/usecases/add_sale_usecase.dart';
 import 'core/services/firestore_service.dart';
@@ -82,6 +83,9 @@ class _MyAppState extends State<MyApp> {
               AddSaleUseCase(repository),
             );
           },
+        ),
+        BlocProvider<AppStateBloc>(
+          create: (context) => AppStateBloc()..add(LoadAppDataEvent()),
         ),
       ],
       child: MaterialApp(

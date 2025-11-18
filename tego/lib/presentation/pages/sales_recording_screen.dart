@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../../core/services/firestore_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/constants/app_constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../widgets/responsive_layout.dart';
+import '../bloc/sales_bloc.dart';
 
 class SalesRecordingScreen extends StatefulWidget {
   const SalesRecordingScreen({super.key});
@@ -33,31 +31,17 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
     return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
 
+  /// Handles form submission by dispatching event to BLoC
   void _addSale() {
     if (_formKey.currentState!.validate()) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final amount =
-            double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0.0;
-        final date = _dateController.text;
-        FirestoreService.instance.addDocument('users/${user.uid}/sales', {
-          'amount': amount,
-          'date': date,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-        // Stats are maintained by Cloud Functions (server-side); do not update user stats from client.
-      }
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sale added successfully!'),
-          backgroundColor: AppConstants.primaryPurple,
-        ),
-      );
-
-      // Navigate back to dashboard
-      Navigator.pop(context);
+      final amount = double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0.0;
+      final date = _dateController.text;
+      
+      // Dispatch event to BLoC - no business logic in UI
+      context.read<SalesBloc>().add(AddSaleEvent(
+        amount: amount,
+        date: date,
+      ));
     }
   }
 
@@ -96,41 +80,61 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
       ),
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: Column(
-          children: [
-            // Custom Header
-            _buildHeader(),
-
-            // Main Content
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppConstants.defaultPadding,
-                  vertical: 20,
+        body: BlocListener<SalesBloc, SalesState>(
+          listener: (context, state) {
+            if (state is SalesSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: AppConstants.primaryPurple,
                 ),
-                child: Form(
-                  key: _formKey,
-                  child: ResponsiveLayout(
-                    mobile: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _buildFormContent(context),
-                    ),
-                    tablet: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: ResponsiveLayout.getScreenWidth(context) * 0.1,
-                      ),
-                      child: Column(
+              );
+              Navigator.pop(context);
+            } else if (state is SalesError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.error),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          child: Column(
+            children: [
+              // Custom Header
+              _buildHeader(),
+
+              // Main Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.defaultPadding,
+                    vertical: 20,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: ResponsiveLayout(
+                      mobile: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: _buildFormContent(context),
+                      ),
+                      tablet: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: ResponsiveLayout.getScreenWidth(context) * 0.1,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: _buildFormContent(context),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         bottomNavigationBar: const BottomNavigationWidget(currentIndex: 2),
       ),
@@ -226,11 +230,15 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
         ],
       ),
 
-      // Add Sale Button
-      CustomButton(
-        text: 'Add Sale',
-        onPressed: _addSale,
-        height: isSmallScreen ? 44 : (isLargeScreen ? 52 : 48),
+      // Add Sale Button with BLoC state handling
+      BlocBuilder<SalesBloc, SalesState>(
+        builder: (context, state) {
+          return CustomButton(
+            text: state is SalesLoading ? 'Adding...' : 'Add Sale',
+            onPressed: state is SalesLoading ? () {} : _addSale,
+            height: isSmallScreen ? 44 : (isLargeScreen ? 52 : 48),
+          );
+        },
       ),
     ];
   }

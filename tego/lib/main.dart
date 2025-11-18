@@ -5,6 +5,11 @@ import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'presentation/pages/splash_screen.dart';
 import 'presentation/bloc/expense_bloc.dart';
+import 'presentation/bloc/sales_bloc.dart';
+import 'data/repositories/sales_repository_impl.dart';
+import 'domain/usecases/add_sale_usecase.dart';
+import 'core/services/firestore_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'core/utils/preferences_service.dart';
 import 'core/utils/theme_notifier.dart';
 
@@ -66,6 +71,17 @@ class _MyAppState extends State<MyApp> {
       providers: [
         BlocProvider<ExpenseBloc>(
           create: (context) => ExpenseBloc(),
+        ),
+        BlocProvider<SalesBloc>(
+          create: (context) {
+            final repository = SalesRepositoryImpl(
+              FirestoreService.instance,
+              FirebaseAuth.instance,
+            );
+            return SalesBloc(
+              AddSaleUseCase(repository),
+            );
+          },
         ),
       ],
       child: MaterialApp(

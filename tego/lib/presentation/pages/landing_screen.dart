@@ -379,18 +379,17 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 
   Future<void> _signOut() async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     try {
       await FirebaseAuth.instance.signOut();
       if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
+      navigator.pushReplacement(
         MaterialPageRoute(builder: (context) => const SignInScreen()),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Sign out failed')));
+      messenger.showSnackBar(const SnackBar(content: Text('Sign out failed')));
     }
   }
 

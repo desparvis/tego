@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/services/firestore_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../core/utils/auth_service.dart';
+import '../../core/services/auth_service.dart';
 import 'sign_in_screen.dart';
 import 'landing_screen.dart';
 import '../../core/constants/app_constants.dart';
@@ -18,8 +18,10 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  final _nameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   void _signUp() {
@@ -50,7 +52,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (cred.user != null) {
         await FirestoreService.instance.createUserDoc(cred.user!.uid, {
           'email': cred.user!.email,
-          'displayName': cred.user!.displayName ?? '',
+          'displayName': _nameController.text.trim(),
           'createdAt': FieldValue.serverTimestamp(),
         });
       }
@@ -105,6 +107,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
         const SnackBar(content: Text('Google sign up cancelled or failed')),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -171,6 +182,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         // Form Fields
                         Column(
                           children: [
+                            // Name Field
+                            CustomTextField(
+                              placeholder: 'Full Name',
+                              controller: _nameController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your name';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(height: 20),
+
                             // Email Field
                             CustomTextField(
                               placeholder: 'Email',
@@ -196,6 +221,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 }
                                 if (value.length < 6) {
                                   return 'Password must be at least 6 characters';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // Confirm Password Field
+                            CustomTextField(
+                              placeholder: 'Confirm Password',
+                              isPassword: true,
+                              controller: _confirmPasswordController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please confirm password';
+                                }
+                                if (value != _passwordController.text) {
+                                  return 'Passwords do not match';
                                 }
                                 return null;
                               },

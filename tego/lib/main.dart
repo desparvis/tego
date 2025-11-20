@@ -1,11 +1,16 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'presentation/pages/splash_screen.dart';
+import 'presentation/bloc/expense_bloc.dart';
+import 'presentation/bloc/sales_bloc.dart';
+import 'presentation/bloc/app_state_bloc.dart';
+import 'data/repositories/sales_repository_impl.dart';
+import 'domain/usecases/add_sale_usecase.dart';
+import 'core/services/firestore_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'core/utils/preferences_service.dart';
 import 'core/utils/theme_notifier.dart';
 
@@ -20,12 +25,11 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    // In debug/dev, point to local emulators if desired.
-    if (!kReleaseMode) {
-      // Firestore emulator default port is 8080, Auth emulator 9099 — adjust if you use different ports.
-      FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
-      FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-    }
+    // Comment out emulator configuration for production Firebase
+    // if (!kReleaseMode) {
+    //   FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+    //   FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+    // }
 
     // ignore: avoid_print
     print('Firebase initialized with DefaultFirebaseOptions');
@@ -64,26 +68,47 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Tego App',
-      themeMode: _themeMode,
-      theme: ThemeData(
-        primaryColor: const Color(0xFF7B4EFF),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF7B4EFF),
-          brightness: Brightness.light,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ExpenseBloc>(
+          create: (context) => ExpenseBloc(),
         ),
-        fontFamily: 'Poppins',
-      ),
-      darkTheme: ThemeData(
-        primaryColor: const Color(0xFF7B4EFF),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF7B4EFF),
-          brightness: Brightness.dark,
+        BlocProvider<SalesBloc>(
+          create: (context) {
+            final repository = SalesRepositoryImpl(
+              FirestoreService.instance,
+              FirebaseAuth.instance,
+            );
+            return SalesBloc(
+              AddSaleUseCase(repository),
+            );
+          },
         ),
-        fontFamily: 'Poppins',
+        BlocProvider<AppStateBloc>(
+          create: (context) => AppStateBloc()..add(LoadAppDataEvent()),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Tego App',
+        themeMode: _themeMode,
+        theme: ThemeData(
+          primaryColor: const Color(0xFF7B4EFF),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF7B4EFF),
+            brightness: Brightness.light,
+          ),
+          fontFamily: 'Poppins',
+        ),
+        darkTheme: ThemeData(
+          primaryColor: const Color(0xFF7B4EFF),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF7B4EFF),
+            brightness: Brightness.dark,
+          ),
+          fontFamily: 'Poppins',
+        ),
+        home: const SplashScreen(),
       ),
-      home: const SplashScreen(),
     );
   }
 }

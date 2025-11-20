@@ -96,7 +96,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         statusBarBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppConstants.backgroundGray,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Column(
           children: [
             // Custom Header
@@ -386,7 +386,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppConstants.cardRadius),
           boxShadow: [
             BoxShadow(
@@ -419,7 +419,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: isLogout ? Colors.red : AppConstants.textDark,
+                  color: isLogout ? Colors.red : Theme.of(context).textTheme.bodyLarge?.color,
                   fontFamily: AppConstants.fontFamily,
                 ),
               ),
@@ -442,7 +442,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppConstants.cardRadius),
         boxShadow: [
           BoxShadow(
@@ -466,10 +466,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: AppConstants.textDark,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontFamily: AppConstants.fontFamily,
               ),
             ),

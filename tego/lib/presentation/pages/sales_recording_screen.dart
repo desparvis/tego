@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../../core/services/firestore_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'landing_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/constants/app_constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/bottom_navigation_widget.dart';
+import '../widgets/responsive_layout.dart';
+import '../widgets/bloc_status_indicator.dart';
+import '../bloc/sales_bloc.dart';
 
 class SalesRecordingScreen extends StatefulWidget {
   const SalesRecordingScreen({super.key});
@@ -32,34 +32,30 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
     return '${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}';
   }
 
+  /// Handles form submission with advanced state management
   void _addSale() {
     if (_formKey.currentState!.validate()) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final amount =
-            double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0.0;
-        final date = _dateController.text;
-        FirestoreService.instance.addDocument('users/${user.uid}/sales', {
-          'amount': amount,
-          'date': date,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-        // Stats are maintained by Cloud Functions (server-side); do not update user stats from client.
-      }
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sale added successfully!'),
-          backgroundColor: AppConstants.primaryPurple,
-        ),
-      );
-
-      // Navigate back to dashboard
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LandingScreen()),
-      );
+      final amount = double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0.0;
+      final date = _dateController.text;
+      
+      // Dispatch event to BLoC with optimistic UI updates
+      context.read<SalesBloc>().add(AddSaleEvent(
+        amount: amount,
+        date: date,
+      ));
+      
+      // Clear form immediately for better UX (optimistic update)
+      _amountController.clear();
+      _dateController.text = _formatDate(DateTime.now());
+    }
+  }
+  
+  /// Handles retry functionality for failed operations
+  void _retrySale() {
+    final currentState = context.read<SalesBloc>().state;
+    if (currentState is SalesError && currentState.isRetryable) {
+      // Reset state and allow user to retry
+      context.read<SalesBloc>().add(ResetSalesStateEvent());
     }
   }
 
@@ -97,125 +93,188 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
         statusBarBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppConstants.backgroundWhite,
-        body: Column(
-          children: [
-            // Custom Header
-            _buildHeader(),
-
-            // Main Content
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppConstants.defaultPadding,
-                  vertical: 20,
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: BlocListener<SalesBloc, SalesState>(
+          listener: (context, state) {
+            if (state is SalesSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
                     children: [
-                      // Page Title - Purple Box
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 20,
-                          horizontal: 24,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppConstants.primaryPurple,
-                          borderRadius: BorderRadius.circular(
-                            AppConstants.cardRadius,
-                          ),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Sales Recording',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: AppConstants.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Form Fields Section
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Sale Amount Field
-                          const Text(
-                            'Sale Amount',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppConstants.primaryPurple,
-                              fontFamily: AppConstants.fontFamily,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          CustomTextField(
-                            placeholder: 'Enter amount in RWF',
-                            controller: _amountController,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter sale amount';
-                              }
-                              if (double.tryParse(value) == null) {
-                                return 'Please enter a valid amount';
-                              }
-                              return null;
-                            },
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Sale Date Field
-                          const Text(
-                            'Sale Date',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppConstants.primaryPurple,
-                              fontFamily: AppConstants.fontFamily,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          GestureDetector(
-                            onTap: _selectDate,
-                            child: AbsorbPointer(
-                              child: CustomTextField(
-                                placeholder: 'Select date',
-                                controller: _dateController,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please select sale date';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      // Add Sale Button
-                      CustomButton(text: 'Add Sale', onPressed: _addSale),
+                      const Icon(Icons.check_circle, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(state.message)),
                     ],
+                  ),
+                  backgroundColor: AppConstants.primaryPurple,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              Navigator.pop(context);
+            } else if (state is SalesError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      const Icon(Icons.error, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(state.error)),
+                      if (state.isRetryable)
+                        TextButton(
+                          onPressed: _retrySale,
+                          child: const Text('RETRY', style: TextStyle(color: Colors.white)),
+                        ),
+                    ],
+                  ),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+            }
+          },
+          child: Column(
+            children: [
+              // Custom Header
+              _buildHeader(),
+
+              // Main Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.defaultPadding,
+                    vertical: 20,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: ResponsiveLayout(
+                      mobile: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: _buildFormContent(context),
+                      ),
+                      tablet: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: ResponsiveLayout.getScreenWidth(context) * 0.1,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: _buildFormContent(context),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-
-        // Bottom Navigation
         bottomNavigationBar: const BottomNavigationWidget(currentIndex: 2),
       ),
     );
+  }
+
+  List<Widget> _buildFormContent(BuildContext context) {
+    final isSmallScreen = ResponsiveLayout.isSmallScreen(context);
+    final isLargeScreen = ResponsiveLayout.isLargeScreen(context);
+    
+    return [
+      // Page Title - Purple Box
+      Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(
+          vertical: isSmallScreen ? 16 : (isLargeScreen ? 24 : 20),
+          horizontal: isSmallScreen ? 16 : (isLargeScreen ? 32 : 24),
+        ),
+        decoration: BoxDecoration(
+          color: AppConstants.primaryPurple,
+          borderRadius: BorderRadius.circular(
+            AppConstants.cardRadius,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            'Sales Recording',
+            style: TextStyle(
+              fontSize: isSmallScreen ? 20 : (isLargeScreen ? 28 : 24),
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontFamily: AppConstants.fontFamily,
+            ),
+          ),
+        ),
+      ),
+
+      // Form Fields Section
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Sale Amount Field
+          Text(
+            'Sale Amount',
+            style: TextStyle(
+              fontSize: isSmallScreen ? 14 : (isLargeScreen ? 18 : 16),
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).primaryColor,
+              fontFamily: AppConstants.fontFamily,
+            ),
+          ),
+          SizedBox(height: isSmallScreen ? 6 : 8),
+          CustomTextField(
+            placeholder: 'Enter amount in RWF',
+            controller: _amountController,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter sale amount';
+              }
+              if (double.tryParse(value) == null) {
+                return 'Please enter a valid amount';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: isSmallScreen ? 16 : (isLargeScreen ? 32 : 24)),
+          // Sale Date Field
+          Text(
+            'Sale Date',
+            style: TextStyle(
+              fontSize: isSmallScreen ? 14 : (isLargeScreen ? 18 : 16),
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).primaryColor,
+              fontFamily: AppConstants.fontFamily,
+            ),
+          ),
+          SizedBox(height: isSmallScreen ? 6 : 8),
+          GestureDetector(
+            onTap: _selectDate,
+            child: AbsorbPointer(
+              child: CustomTextField(
+                placeholder: 'Select date',
+                controller: _dateController,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select sale date';
+                  }
+                  return null;
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+
+      // Add Sale Button with BLoC state handling
+      BlocBuilder<SalesBloc, SalesState>(
+        builder: (context, state) {
+          return CustomButton(
+            text: state is SalesLoading ? 'Adding...' : 'Add Sale',
+            onPressed: state is SalesLoading ? () {} : _addSale,
+            height: isSmallScreen ? 44 : (isLargeScreen ? 52 : 48),
+          );
+        },
+      ),
+    ];
   }
 
   // Custom Header
@@ -232,14 +291,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
           child: Row(
             children: [
               GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LandingScreen(),
-                    ),
-                  );
-                },
+                onTap: () => Navigator.pop(context),
                 child: const Icon(
                   Icons.arrow_back,
                   color: Colors.white,
@@ -247,15 +299,18 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              const Text(
-                'Sales Recording',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: AppConstants.fontFamily,
+              const Expanded(
+                child: Text(
+                  'Sales Recording',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: AppConstants.fontFamily,
+                  ),
                 ),
               ),
+              const BlocStatusIndicator(),
             ],
           ),
         ),

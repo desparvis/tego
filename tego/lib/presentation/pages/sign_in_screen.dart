@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../core/services/auth_service.dart';
 import '../../core/services/firestore_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'landing_screen.dart';
 import 'sign_up_screen.dart';
+import 'password_reset_screen.dart';
 import '../../core/constants/app_constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/curved_header_clipper.dart';
+import '../widgets/custom_snackbar.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -18,9 +19,10 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   void _signIn() {
     if (_formKey.currentState!.validate()) {
@@ -28,82 +30,72 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
-  Future<void> _performSignIn() async {
-    final email = _usernameController.text.trim();
-    final password = _passwordController.text;
-    final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
+  void _navigateToPasswordReset() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PasswordResetScreen()),
     );
+  }
+
+  Future<void> _performSignIn() async {
+    setState(() => _isLoading = true);
+    
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
 
     try {
-      final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-
-      // Ensure user document exists (merge safe)
-      if (cred.user != null) {
-        await FirestoreService.instance.createUserDoc(cred.user!.uid, {
-          'email': cred.user!.email,
-          'displayName': cred.user!.displayName ?? '',
-          'lastSignIn': FieldValue.serverTimestamp(),
-        });
-      }
-
+      
       if (!mounted) return;
-      navigator.pop(); // remove dialog
-      navigator.pushReplacement(
-        MaterialPageRoute(builder: (context) => const LandingScreen()),
-      );
-    } on FirebaseAuthException catch (e) {
+      setState(() => _isLoading = false);
+      
+      // Create/update user document
+      await FirestoreService.instance.createUserDoc(credential.user!.uid, {
+        'email': credential.user!.email,
+        'displayName': credential.user!.displayName ?? '',
+        'lastSignIn': FieldValue.serverTimestamp(),
+      });
+      
       if (mounted) {
-        navigator.pop();
-        final message = e.message ?? 'Sign in failed';
-        messenger.showSnackBar(SnackBar(content: Text(message)));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LandingScreen()),
+        );
       }
     } catch (e) {
-      if (mounted) {
-        navigator.pop();
-        messenger.showSnackBar(const SnackBar(content: Text('Sign in failed')));
-      }
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      CustomSnackBar.show(
+        context,
+        message: e.toString(),
+        type: SnackBarType.error,
+      );
     }
   }
 
   Future<void> _performGoogleSignIn() async {
-    final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _isLoading = true);
 
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
-
-    final result = await AuthService.signInWithGoogle();
-    if (!mounted) return;
-
-    if (result != null && result.user != null) {
-      // Ensure user doc exists
-      await FirestoreService.instance.createUserDoc(result.user!.uid, {
-        'email': result.user!.email,
-        'displayName': result.user!.displayName ?? '',
-        'lastSignIn': FieldValue.serverTimestamp(),
-      });
-      navigator.pop(); // dismiss progress
-      navigator.pushReplacement(
-        MaterialPageRoute(builder: (context) => const LandingScreen()),
+    try {
+      // Simple Google sign-in placeholder - would need google_sign_in package
+      CustomSnackBar.show(
+        context,
+        message: 'Google sign-in not implemented yet',
+        type: SnackBarType.error,
       );
-    } else {
-      // If sign-in failed or was cancelled, show a simple message.
-      navigator.pop();
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Google sign in cancelled or failed')),
+    } catch (e) {
+      CustomSnackBar.show(
+        context,
+        message: e.toString(),
+        type: SnackBarType.error,
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -173,11 +165,15 @@ class _SignInScreenState extends State<SignInScreen> {
                           children: [
                             // Email Field
                             CustomTextField(
-                              placeholder: 'Email',
-                              controller: _usernameController,
+                              placeholder: 'Email Address',
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter username';
+                                  return 'Please enter your email';
+                                }
+                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                  return 'Please enter a valid email';
                                 }
                                 return null;
                               },
@@ -192,25 +188,51 @@ class _SignInScreenState extends State<SignInScreen> {
                               controller: _passwordController,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter password';
+                                  return 'Please enter your password';
+                                }
+                                if (value.length < 6) {
+                                  return 'Password must be at least 6 characters';
                                 }
                                 return null;
                               },
+                            ),
+                            
+                            const SizedBox(height: 8),
+                            
+                            // Forgot Password Link
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: GestureDetector(
+                                onTap: _navigateToPasswordReset,
+                                child: const Text(
+                                  'Forgot Password?',
+                                  style: TextStyle(
+                                    color: AppConstants.primaryPurple,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: AppConstants.fontFamily,
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
 
                         // Sign In Button
-                        CustomButton(text: 'Sign In', onPressed: _signIn),
+                        CustomButton(
+                          text: 'Sign In',
+                          onPressed: _isLoading ? null : _signIn,
+                          isLoading: _isLoading,
+                        ),
 
                         const SizedBox(height: 12),
 
                         // Google Sign-In
                         CustomButton(
                           text: 'Sign in with Google',
-                          onPressed: _performGoogleSignIn,
+                          onPressed: _isLoading ? null : _performGoogleSignIn,
                           backgroundColor: Colors.white,
                           textColor: AppConstants.textDark,
+                          icon: Icons.login,
                         ),
 
                         // Sign Up Link
@@ -253,5 +275,12 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

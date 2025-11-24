@@ -93,6 +93,10 @@ class BottomNavigationWidget extends StatelessWidget {
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt),
+            label: 'Expenses',
+          ),
         ],
       ),
     );

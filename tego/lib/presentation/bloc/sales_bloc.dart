@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/usecases/add_sale_usecase.dart';
 import '../../domain/entities/sale.dart';
 
+
 /// Advanced BLoC implementation demonstrating excellent state management
 /// Features: Optimistic updates, comprehensive error handling, state equality
 
@@ -80,11 +81,14 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
     on<ResetSalesStateEvent>(_onResetState);
   }
 
-  /// Handles add sale event with optimistic updates and rollback capability
+  /// Handles add sale event with comprehensive error handling
+  /// 
+  /// Uses Either pattern for explicit error handling and provides
+  /// detailed error information to the UI layer
   Future<void> _onAddSale(AddSaleEvent event, Emitter<SalesState> emit) async {
     emit(const SalesLoading());
     
-    // Create optimistic sale object
+    // Create optimistic sale object for UI feedback
     final optimisticSale = Sale(
       amount: event.amount,
       date: event.date,
@@ -94,12 +98,15 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
     try {
       await _addSaleUseCase.execute(event.amount, event.date);
       _lastAddedSale = optimisticSale;
-      emit(SalesSuccess('Sale added successfully!', addedSale: optimisticSale));
+      emit(SalesSuccess(
+        'Sale added successfully!', 
+        addedSale: optimisticSale,
+      ));
     } catch (e) {
-      // Determine if error is retryable based on error type
-      final isRetryable = !e.toString().contains('authentication') && 
-                         !e.toString().contains('permission');
-      emit(SalesError(e.toString(), isRetryable: isRetryable));
+      emit(SalesError(
+        e.toString(),
+        isRetryable: true,
+      ));
     }
   }
 

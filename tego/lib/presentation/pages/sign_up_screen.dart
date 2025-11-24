@@ -48,6 +48,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: password,
       );
 
+      // Send verification email
+      await cred.user!.sendEmailVerification();
+      
       // Create or merge the user document in Firestore
       if (cred.user != null) {
         await FirestoreService.instance.createUserDoc(cred.user!.uid, {
@@ -59,6 +62,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       if (!mounted) return;
       navigator.pop(); // remove dialog
+      
+      // Show success message
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Account created! Verification email sent to ${cred.user!.email}'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
       navigator.pushReplacement(
         MaterialPageRoute(builder: (context) => const LandingScreen()),
       );

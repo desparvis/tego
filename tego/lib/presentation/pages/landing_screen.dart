@@ -306,22 +306,6 @@ class _LandingScreenState extends State<LandingScreen> {
                             );
                           },
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '+$todayCount made today',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white.withValues(alpha: 0.9),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Total: ${totalAmount.toStringAsFixed(0)} RWF',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white.withValues(alpha: 0.9),
-                          ),
-                        ),
                       ],
                     ),
                   );
@@ -340,11 +324,41 @@ class _LandingScreenState extends State<LandingScreen> {
                           builder: (context) => const ExpenseListScreen(),
                         ),
                       ),
-                      child: _buildStatCard(
-                        title: 'Today\'s expenses',
-                        value: '5,231 RWF',
-                        color: const Color(0xFFD4A4EB),
-                        icon: Icons.trending_down,
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: (() {
+                          final user = FirebaseAuth.instance.currentUser;
+                          return (user == null)
+                              ? null
+                              : FirestoreService.instance.streamCollection(
+                                  'users/${user.uid}/expenses',
+                                  limit: 1000,
+                                );
+                        })(),
+                        builder: (context, snapshot) {
+                          double todayExpenses = 0.0;
+                          if (snapshot.hasData) {
+                            final now = DateTime.now();
+                            for (final doc in snapshot.data!.docs) {
+                              final data = doc.data() as Map<String, dynamic>;
+                              DateTime? ts;
+                              if (data['timestamp'] != null && data['timestamp'] is Timestamp) {
+                                ts = (data['timestamp'] as Timestamp).toDate();
+                              }
+                              if (ts != null && ts.year == now.year && ts.month == now.month && ts.day == now.day) {
+                                final amt = (data['amount'] is num)
+                                    ? (data['amount'] as num).toDouble()
+                                    : double.tryParse('${data['amount']}') ?? 0.0;
+                                todayExpenses += amt;
+                              }
+                            }
+                          }
+                          return _buildStatCard(
+                            title: 'Today\'s expenses',
+                            value: '${todayExpenses.toStringAsFixed(0)} RWF',
+                            color: const Color(0xFFD4A4EB),
+                            icon: Icons.trending_down,
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -372,19 +386,70 @@ class _LandingScreenState extends State<LandingScreen> {
               // === PROFIT CARD ===
               _buildSectionTitle('Profit'),
               const SizedBox(height: 12),
-              _buildLargeCard(
-                color: const Color(0xFFD4A4EB),
-                height: 80,
-                child: const Center(
-                  child: Text(
-                    '4,501 RWF',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ),
+              StreamBuilder<QuerySnapshot>(
+                stream: (() {
+                  final user = FirebaseAuth.instance.currentUser;
+                  return (user == null)
+                      ? null
+                      : FirestoreService.instance.streamCollection(
+                          'users/${user.uid}/sales',
+                          limit: 1000,
+                        );
+                })(),
+                builder: (context, salesSnapshot) {
+                  return StreamBuilder<QuerySnapshot>(
+                    stream: (() {
+                      final user = FirebaseAuth.instance.currentUser;
+                      return (user == null)
+                          ? null
+                          : FirestoreService.instance.streamCollection(
+                              'users/${user.uid}/expenses',
+                              limit: 1000,
+                            );
+                    })(),
+                    builder: (context, expenseSnapshot) {
+                      double totalSales = 0.0;
+                      double totalExpenses = 0.0;
+                      
+                      if (salesSnapshot.hasData) {
+                        for (final doc in salesSnapshot.data!.docs) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          final amt = (data['amount'] is num)
+                              ? (data['amount'] as num).toDouble()
+                              : double.tryParse('${data['amount']}') ?? 0.0;
+                          totalSales += amt;
+                        }
+                      }
+                      
+                      if (expenseSnapshot.hasData) {
+                        for (final doc in expenseSnapshot.data!.docs) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          final amt = (data['amount'] is num)
+                              ? (data['amount'] as num).toDouble()
+                              : double.tryParse('${data['amount']}') ?? 0.0;
+                          totalExpenses += amt;
+                        }
+                      }
+                      
+                      final profit = totalSales - totalExpenses;
+                      
+                      return _buildLargeCard(
+                        color: const Color(0xFFD4A4EB),
+                        height: 80,
+                        child: Center(
+                          child: Text(
+                            '${profit.toStringAsFixed(0)} RWF',
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
               const SizedBox(height: 40),
             ],

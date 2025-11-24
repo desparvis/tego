@@ -3,34 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'presentation/pages/splash_screen.dart';
+import 'presentation/widgets/auth_wrapper.dart';
 import 'presentation/bloc/expense_bloc.dart';
 import 'presentation/bloc/sales_bloc.dart';
+import 'presentation/bloc/sales_cubit.dart';
+import 'presentation/bloc/sales_list_bloc.dart';
 import 'presentation/bloc/app_state_bloc.dart';
 import 'data/repositories/sales_repository_impl.dart';
+import 'data/repositories/expense_repository_impl.dart';
 import 'domain/usecases/add_sale_usecase.dart';
+import 'domain/usecases/get_sales_analytics_usecase.dart';
 import 'core/services/firestore_service.dart';
+import 'core/state/app_state_manager.dart';
+import 'core/state/performance_bloc_observer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'core/utils/preferences_service.dart';
 import 'core/utils/theme_notifier.dart';
+import 'core/utils/settings_manager.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase using generated `firebase_options.dart`.
-  // `flutterfire configure` created this file and added platform
-  // configuration. Use `DefaultFirebaseOptions.currentPlatform` so the
-  // correct options are provided on every platform.
+  // Set up performance monitoring for BLoCs
+  Bloc.observer = PerformanceBlocObserver();
+
+  // Initialize Firebase
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    // Comment out emulator configuration for production Firebase
-    // if (!kReleaseMode) {
-    //   FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
-    //   FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-    // }
-
     // ignore: avoid_print
     print('Firebase initialized with DefaultFirebaseOptions');
   } catch (e, st) {
@@ -39,6 +41,7 @@ void main() async {
   }
 
   await PreferencesService.init();
+  await SettingsManager.initializeSettings();
   runApp(const MyApp());
 }
 
@@ -62,52 +65,108 @@ class _MyAppState extends State<MyApp> {
   void _loadTheme() {
     final savedTheme = PreferencesService.getThemeMode();
     setState(() {
-      _themeMode = savedTheme == 'dark' ? ThemeMode.dark : ThemeMode.light;
+      switch (savedTheme) {
+        case 'dark':
+          _themeMode = ThemeMode.dark;
+          break;
+        case 'light':
+          _themeMode = ThemeMode.light;
+          break;
+        default:
+          _themeMode = ThemeMode.system;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
+    return MultiProvider(
       providers: [
-        BlocProvider<ExpenseBloc>(
-          create: (context) => ExpenseBloc(),
+        // ChangeNotifier for global app state
+        ChangeNotifierProvider<AppStateManager>(
+          create: (_) => AppStateManager(),
         ),
-        BlocProvider<SalesBloc>(
-          create: (context) {
-            final repository = SalesRepositoryImpl(
-              FirestoreService.instance,
-              FirebaseAuth.instance,
-            );
-            return SalesBloc(
-              AddSaleUseCase(repository),
-            );
-          },
+        // Repository provider for dependency injection
+        Provider<SalesRepositoryImpl>(
+          create: (_) => SalesRepositoryImpl(
+            FirestoreService.instance,
+            FirebaseAuth.instance,
+          ),
         ),
-        BlocProvider<AppStateBloc>(
-          create: (context) => AppStateBloc()..add(LoadAppDataEvent()),
+        Provider<ExpenseRepositoryImpl>(
+          create: (_) => ExpenseRepositoryImpl(
+            FirestoreService.instance,
+            FirebaseAuth.instance,
+          ),
+        ),
+        // Use case providers
+        ProxyProvider<SalesRepositoryImpl, AddSaleUseCase>(
+          update: (_, repository, __) => AddSaleUseCase(repository),
+        ),
+        ProxyProvider<SalesRepositoryImpl, GetSalesAnalyticsUseCase>(
+          update: (_, repository, __) => GetSalesAnalyticsUseCase(repository),
         ),
       ],
-      child: MaterialApp(
-        title: 'Tego App',
-        themeMode: _themeMode,
-        theme: ThemeData(
-          primaryColor: const Color(0xFF7B4EFF),
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF7B4EFF),
-            brightness: Brightness.light,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<ExpenseBloc>(
+            create: (context) =>
+                ExpenseBloc(context.read<ExpenseRepositoryImpl>()),
           ),
-          fontFamily: 'Poppins',
-        ),
-        darkTheme: ThemeData(
-          primaryColor: const Color(0xFF7B4EFF),
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF7B4EFF),
-            brightness: Brightness.dark,
+          BlocProvider<SalesBloc>(
+            create: (context) => SalesBloc(context.read<AddSaleUseCase>()),
           ),
-          fontFamily: 'Poppins',
+          BlocProvider<SalesCubit>(
+            create: (context) => SalesCubit(context.read<AddSaleUseCase>()),
+          ),
+          BlocProvider<SalesListBloc>(
+            create: (context) => SalesListBloc(
+              getSalesAnalyticsUseCase: context
+                  .read<GetSalesAnalyticsUseCase>(),
+              firestoreService: FirestoreService.instance,
+              auth: FirebaseAuth.instance,
+            ),
+          ),
+          BlocProvider<AppStateBloc>(
+            create: (context) => AppStateBloc()..add(LoadAppDataEvent()),
+          ),
+        ],
+        child: MaterialApp(
+          title: 'Tego App',
+          themeMode: _themeMode,
+          theme: ThemeData(
+            primaryColor: const Color(0xFF7B4EFF),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF7B4EFF),
+              brightness: Brightness.light,
+            ),
+            fontFamily: 'Poppins',
+            useMaterial3: true,
+            pageTransitionsTheme: const PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+              },
+            ),
+          ),
+          darkTheme: ThemeData(
+            primaryColor: const Color(0xFF7B4EFF),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF7B4EFF),
+              brightness: Brightness.dark,
+            ),
+            fontFamily: 'Poppins',
+            useMaterial3: true,
+            pageTransitionsTheme: const PageTransitionsTheme(
+              builders: {
+                TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+              },
+            ),
+          ),
+          home: const AuthWrapper(),
+          debugShowCheckedModeBanner: false,
         ),
-        home: const SplashScreen(),
       ),
     );
   }

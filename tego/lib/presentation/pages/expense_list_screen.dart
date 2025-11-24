@@ -177,7 +177,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const BottomNavigationWidget(currentIndex: 5),
+      bottomNavigationBar: const BottomNavigationWidget(currentIndex: 4),
     );
   }
 }

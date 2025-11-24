@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/app_constants.dart';
 
 class AnimatedCard extends StatefulWidget {
   final Widget child;
-  final Duration duration;
-  final Curve curve;
-  final double elevation;
+  final Color? color;
+  final double? elevation;
+  final EdgeInsets? padding;
+  final VoidCallback? onTap;
+  final Duration animationDuration;
 
   const AnimatedCard({
     super.key,
     required this.child,
-    this.duration = const Duration(milliseconds: 300),
-    this.curve = Curves.easeInOut,
-    this.elevation = 4.0,
+    this.color,
+    this.elevation,
+    this.padding,
+    this.onTap,
+    this.animationDuration = const Duration(milliseconds: 200),
   });
 
   @override
@@ -28,48 +33,59 @@ class _AnimatedCardState extends State<AnimatedCard>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: widget.duration,
+      duration: widget.animationDuration,
       vsync: this,
     );
     
     _scaleAnimation = Tween<double>(
-      begin: 0.95,
-      end: 1.0,
+      begin: 1.0,
+      end: 0.95,
     ).animate(CurvedAnimation(
       parent: _controller,
-      curve: widget.curve,
+      curve: Curves.easeInOut,
     ));
     
     _elevationAnimation = Tween<double>(
-      begin: 0.0,
-      end: widget.elevation,
+      begin: widget.elevation ?? 4.0,
+      end: (widget.elevation ?? 4.0) * 1.5,
     ).animate(CurvedAnimation(
       parent: _controller,
-      curve: widget.curve,
+      curve: Curves.easeInOut,
     ));
-    
-    _controller.forward();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Card(
-            elevation: _elevationAnimation.value,
-            child: widget.child,
-          ),
-        );
-      },
-    );
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) => _controller.reverse(),
+      onTapCancel: () => _controller.reverse(),
+      onTap: widget.onTap,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Card(
+              elevation: _elevationAnimation.value,
+              color: widget.color,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+              ),
+              child: Padding(
+                padding: widget.padding ?? const EdgeInsets.all(16),
+                child: widget.child,
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }

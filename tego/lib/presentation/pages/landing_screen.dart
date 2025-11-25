@@ -2,10 +2,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'expense_recording_screen.dart';
+import 'cash_flow_screen.dart';
+import 'reports_screen.dart';
+import 'reminders_screen.dart';
+import 'debt_screen.dart';
 import '../../core/services/firestore_service.dart';
 import 'sign_in_screen.dart';
+
+import 'expense_list_screen.dart';
+import 'inventory_screen.dart';
+import 'profit_screen.dart';
 import '../../core/utils/preferences_service.dart';
+import '../../core/utils/app_localizations_helper.dart';
 import '../widgets/bottom_navigation_widget.dart';
+import '../widgets/floating_action_menu.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -78,7 +89,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Welcome back',
+                  AppLocalizationsHelper.of(context).welcomeBack,
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.white.withValues(alpha: 0.9),
@@ -114,7 +125,7 @@ class _LandingScreenState extends State<LandingScreen> {
       // Main Body — full screen, scrollable
       body: Container(
         width: double.infinity,
-        color: Colors.grey[50],
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -126,7 +137,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
               const SizedBox(height: 6),
@@ -134,13 +145,13 @@ class _LandingScreenState extends State<LandingScreen> {
                 'Here’s your dashboard for today',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.black.withValues(alpha: 0.6),
+                  color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
                 ),
               ),
               const SizedBox(height: 14),
 
               // === ALL TIME SALES CARD (FULL WIDTH) ===
-              _buildSectionTitle('All time sales'),
+              _buildSectionTitle(AppLocalizationsHelper.of(context).sales),
               const SizedBox(height: 12),
 
               // Big purple card showing aggregated sales from Firestore
@@ -303,22 +314,6 @@ class _LandingScreenState extends State<LandingScreen> {
                             );
                           },
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '+$todayCount made today',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white.withValues(alpha: 0.9),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Total: ${totalAmount.toStringAsFixed(0)} RWF',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white.withValues(alpha: 0.9),
-                          ),
-                        ),
                       ],
                     ),
                   );
@@ -326,24 +321,95 @@ class _LandingScreenState extends State<LandingScreen> {
               ),
               const SizedBox(height: 28),
 
-              // === EXPENSES & BALANCE (SIDE BY SIDE) ===
+              // === EXPENSES & INVENTORY (SIDE BY SIDE) ===
               Row(
                 children: [
                   Expanded(
-                    child: _buildStatCard(
-                      title: 'Today\'s expenses',
-                      value: '5,231 RWF',
-                      color: const Color(0xFFD4A4EB),
-                      icon: Icons.trending_down,
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ExpenseListScreen(),
+                        ),
+                      ),
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: (() {
+                          final user = FirebaseAuth.instance.currentUser;
+                          return (user == null)
+                              ? null
+                              : FirestoreService.instance.streamCollection(
+                                  'users/${user.uid}/expenses',
+                                  limit: 1000,
+                                );
+                        })(),
+                        builder: (context, snapshot) {
+                          double todayExpenses = 0.0;
+                          if (snapshot.hasData) {
+                            final now = DateTime.now();
+                            for (final doc in snapshot.data!.docs) {
+                              final data = doc.data() as Map<String, dynamic>;
+                              DateTime? ts;
+                              if (data['timestamp'] != null && data['timestamp'] is Timestamp) {
+                                ts = (data['timestamp'] as Timestamp).toDate();
+                              }
+                              if (ts != null && ts.year == now.year && ts.month == now.month && ts.day == now.day) {
+                                final amt = (data['amount'] is num)
+                                    ? (data['amount'] as num).toDouble()
+                                    : double.tryParse('${data['amount']}') ?? 0.0;
+                                todayExpenses += amt;
+                              }
+                            }
+                          }
+                          return _buildStatCard(
+                            title: AppLocalizationsHelper.of(context).todaysExpenses,
+                            value: '${todayExpenses.toStringAsFixed(0)} RWF',
+                            color: const Color(0xFFD4A4EB),
+                            icon: Icons.trending_down,
+                          );
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: _buildStatCard(
-                      title: 'Balance',
-                      value: '21,000 RWF',
-                      color: const Color(0xFFF4A4A4),
-                      icon: Icons.account_balance_wallet,
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const InventoryScreen(),
+                        ),
+                      ),
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: (() {
+                          final user = FirebaseAuth.instance.currentUser;
+                          return (user == null)
+                              ? null
+                              : FirestoreService.instance.streamCollection(
+                                  'users/${user.uid}/inventory',
+                                  limit: 1000,
+                                );
+                        })(),
+                        builder: (context, snapshot) {
+                          int totalItems = 0;
+                          int lowStockItems = 0;
+                          if (snapshot.hasData) {
+                            totalItems = snapshot.data!.docs.length;
+                            for (final doc in snapshot.data!.docs) {
+                              final data = doc.data() as Map<String, dynamic>;
+                              final quantity = (data['quantity'] as num?)?.toInt() ?? 0;
+                              final minStock = (data['minStockLevel'] as num?)?.toInt() ?? 5;
+                              if (quantity <= minStock) lowStockItems++;
+                            }
+                          }
+                          return _buildStatCard(
+                            title: AppLocalizationsHelper.of(context).inventoryItems,
+                            value: '$totalItems items',
+                            color: const Color(0xFF4CAF50),
+                            icon: Icons.inventory,
+                            subtitle: lowStockItems > 0 ? '$lowStockItems ${AppLocalizationsHelper.of(context).lowStock}' : AppLocalizationsHelper.of(context).allGood,
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ],
@@ -351,21 +417,190 @@ class _LandingScreenState extends State<LandingScreen> {
               const SizedBox(height: 28),
 
               // === PROFIT CARD ===
-              _buildSectionTitle('Profit'),
+              _buildSectionTitle(AppLocalizationsHelper.of(context).profit),
               const SizedBox(height: 12),
-              _buildLargeCard(
-                color: const Color(0xFFD4A4EB),
-                height: 80,
-                child: const Center(
-                  child: Text(
-                    '4,501 RWF',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfitScreen(),
                   ),
                 ),
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: (() {
+                    final user = FirebaseAuth.instance.currentUser;
+                    return (user == null)
+                        ? null
+                        : FirestoreService.instance.streamCollection(
+                            'users/${user.uid}/sales',
+                            limit: 1000,
+                          );
+                  })(),
+                  builder: (context, salesSnapshot) {
+                    return StreamBuilder<QuerySnapshot>(
+                      stream: (() {
+                        final user = FirebaseAuth.instance.currentUser;
+                        return (user == null)
+                            ? null
+                            : FirestoreService.instance.streamCollection(
+                                'users/${user.uid}/expenses',
+                                limit: 1000,
+                              );
+                      })(),
+                      builder: (context, expenseSnapshot) {
+                        double totalSales = 0.0;
+                        double totalExpenses = 0.0;
+                        
+                        if (salesSnapshot.hasData) {
+                          for (final doc in salesSnapshot.data!.docs) {
+                            final data = doc.data() as Map<String, dynamic>;
+                            final amt = (data['amount'] is num)
+                                ? (data['amount'] as num).toDouble()
+                                : double.tryParse('${data['amount']}') ?? 0.0;
+                            totalSales += amt;
+                          }
+                        }
+                        
+                        if (expenseSnapshot.hasData) {
+                          for (final doc in expenseSnapshot.data!.docs) {
+                            final data = doc.data() as Map<String, dynamic>;
+                            final amt = (data['amount'] is num)
+                                ? (data['amount'] as num).toDouble()
+                                : double.tryParse('${data['amount']}') ?? 0.0;
+                            totalExpenses += amt;
+                          }
+                        }
+                        
+                        final profit = totalSales - totalExpenses;
+                        
+                        return _buildLargeCard(
+                          color: const Color(0xFFD4A4EB),
+                          height: 80,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  '${profit.toStringAsFixed(0)} RWF',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.arrow_forward_ios,
+                                color: Colors.black54,
+                                size: 16,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              // === QUICK ACCESS SECTION ===
+              _buildSectionTitle(AppLocalizationsHelper.of(context).quickAccess),
+              const SizedBox(height: 12),
+              
+              // First row - Inventory and Expenses
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      AppLocalizationsHelper.of(context).inventory,
+                      AppLocalizationsHelper.of(context).manageStock,
+                      Icons.inventory,
+                      const Color(0xFF4CAF50),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const InventoryScreen()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      AppLocalizationsHelper.of(context).expenses,
+                      AppLocalizationsHelper.of(context).addExpense,
+                      Icons.receipt,
+                      const Color(0xFFFF9800),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ExpenseRecordingScreen()),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              
+              // Second row - Cash Flow and Reports
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      'Cash Flow',
+                      'Track flow',
+                      Icons.trending_up,
+                      const Color(0xFF2196F3),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CashFlowScreen()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      'Reports',
+                      'Credit report',
+                      Icons.assessment,
+                      const Color(0xFF9C27B0),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ReportsScreen()),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              
+              // Third row - Reminders and Debt Management
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      'Reminders',
+                      'Set alerts',
+                      Icons.notifications,
+                      const Color(0xFFE91E63),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const RemindersScreen()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      'Debt',
+                      'Track debts',
+                      Icons.account_balance_wallet,
+                      const Color(0xFFFF5722),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const DebtScreen()),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 40),
             ],
@@ -375,22 +610,24 @@ class _LandingScreenState extends State<LandingScreen> {
 
       // Bottom Navigation
       bottomNavigationBar: const BottomNavigationWidget(currentIndex: 0),
+      
+      // Floating Action Menu
+      floatingActionButton: const FloatingActionMenu(),
     );
   }
 
   Future<void> _signOut() async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     try {
       await FirebaseAuth.instance.signOut();
       if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
+      navigator.pushReplacement(
         MaterialPageRoute(builder: (context) => const SignInScreen()),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Sign out failed')));
+      messenger.showSnackBar(const SnackBar(content: Text('Sign out failed')));
     }
   }
 
@@ -411,10 +648,10 @@ class _LandingScreenState extends State<LandingScreen> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,
-        color: Colors.black87,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
       ),
     );
   }
@@ -449,6 +686,7 @@ class _LandingScreenState extends State<LandingScreen> {
     required String value,
     required Color color,
     required IconData icon,
+    String? subtitle,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -484,7 +722,57 @@ class _LandingScreenState extends State<LandingScreen> {
               color: Colors.black.withValues(alpha: 0.7),
             ),
           ),
+          if (subtitle != null)
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.black.withValues(alpha: 0.5),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  // === HELPER: Quick Access Card ===
+  Widget _buildQuickAccessCard(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

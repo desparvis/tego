@@ -1,44 +1,107 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // User documents: each user can read/write their own document
+    // User documents: owner-only access with field validation
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
 
-      // Per-user sales subcollection
+      // Sales subcollection with comprehensive validation
       match /sales/{saleId} {
-        allow read: if request.auth != null && request.auth.uid == userId;
-
-        // Create: ensure authenticated owner and required fields are present and valid
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Strict validation on create
         allow create: if request.auth != null
                       && request.auth.uid == userId
-                      && request.resource.data.keys().hasAll(['amount','date'])
+                      && request.resource.data.keys().hasAll(['amount', 'date'])
                       && request.resource.data.amount is number
-                      && request.resource.data.date is string;
-
-        // Update: only owner and if amount/date are valid when present. Disallow client updates to server-managed stats.
+                      && request.resource.data.amount > 0
+                      && request.resource.data.date is string
+                      && request.resource.data.date.matches('^[0-9]{2}-[0-9]{2}-[0-9]{4}$');
+        
+        // Validation on update
         allow update: if request.auth != null
                       && request.auth.uid == userId
-                      && ( !('totalSalesCount' in request.resource.data)
-                           && !('totalAmount' in request.resource.data)
-                           && !('todaySalesCount' in request.resource.data)
-                           && !('lastSaleAt' in request.resource.data)
-                         )
-                      && (
-                        !('amount' in request.resource.data) || request.resource.data.amount is number
-                      )
-                      && (
-                        !('date' in request.resource.data) || request.resource.data.date is string
-                      );
-
-        // Delete: owner only
-        allow delete: if request.auth != null && request.auth.uid == userId;
+                      && request.resource.data.amount is number
+                      && request.resource.data.amount > 0
+                      && request.resource.data.date is string
+                      && request.resource.data.date.matches('^[0-9]{2}-[0-9]{2}-[0-9]{4}$');
       }
-    }
 
-    // Top-level sales collection (if used): only owner can read/write
-    match /sales/{docId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.ownerId;
+      // Expenses subcollection with category validation
+      match /expenses/{expenseId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Strict validation on create
+        allow create: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.keys().hasAll(['amount', 'category', 'description', 'date'])
+                      && request.resource.data.amount is number
+                      && request.resource.data.amount > 0
+                      && request.resource.data.category in ['Rent', 'Utilities', 'Supplies', 'Marketing', 'Transport', 'Other']
+                      && request.resource.data.description is string
+                      && request.resource.data.description.size() > 0
+                      && request.resource.data.date is string
+                      && request.resource.data.date.matches('^[0-9]{2}-[0-9]{2}-[0-9]{4}$');
+        
+        // Validation on update
+        allow update: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.amount is number
+                      && request.resource.data.amount > 0
+                      && request.resource.data.category in ['Rent', 'Utilities', 'Supplies', 'Marketing', 'Transport', 'Other']
+                      && request.resource.data.description is string
+                      && request.resource.data.description.size() > 0
+                      && request.resource.data.date is string
+                      && request.resource.data.date.matches('^[0-9]{2}-[0-9]{2}-[0-9]{4}$');
+      }
+
+      // Inventory subcollection
+      match /inventory/{itemId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        allow create: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.keys().hasAll(['name', 'category', 'costPrice', 'sellingPrice', 'quantity'])
+                      && request.resource.data.name is string
+                      && request.resource.data.name.size() > 0
+                      && request.resource.data.category is string
+                      && request.resource.data.costPrice is number
+                      && request.resource.data.costPrice >= 0
+                      && request.resource.data.sellingPrice is number
+                      && request.resource.data.sellingPrice >= 0
+                      && request.resource.data.quantity is number
+                      && request.resource.data.quantity >= 0;
+        
+        allow update: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.name is string
+                      && request.resource.data.name.size() > 0
+                      && request.resource.data.costPrice is number
+                      && request.resource.data.costPrice >= 0
+                      && request.resource.data.sellingPrice is number
+                      && request.resource.data.sellingPrice >= 0
+                      && request.resource.data.quantity is number
+                      && request.resource.data.quantity >= 0;
+      }
+
+      // Reminders subcollection
+      match /reminders/{reminderId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        allow create: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.keys().hasAll(['title', 'type', 'dueDate'])
+                      && request.resource.data.title is string
+                      && request.resource.data.title.size() > 0
+                      && request.resource.data.type in ['lowStock', 'payment', 'expense', 'custom']
+                      && request.resource.data.dueDate is timestamp;
+        
+        allow update: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.title is string
+                      && request.resource.data.title.size() > 0
+                      && request.resource.data.type in ['lowStock', 'payment', 'expense', 'custom'];
+      }
     }
   }
 }

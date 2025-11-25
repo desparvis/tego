@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'dart:io';
 
 class AuthService {
   /// Signs in with Google and returns the [UserCredential] on success,
@@ -8,9 +9,16 @@ class AuthService {
   static Future<UserCredential?> signInWithGoogle() async {
     try {
       if (kIsWeb) {
-        final provider = GoogleAuthProvider();
-        return await FirebaseAuth.instance.signInWithPopup(provider);
+        // Web Google Sign-In requires Firebase Console configuration
+        print('Google Sign-In on web requires Firebase Console setup');
+        return null;
       }
+      
+      // Check if running on iOS simulator
+      if (!kIsWeb && Platform.isIOS) {
+        print('Google Sign-In may have limitations on iOS simulator');
+      }
+      
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) {
         // User cancelled the sign-in

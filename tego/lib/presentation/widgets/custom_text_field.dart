@@ -6,6 +6,7 @@ class CustomTextField extends StatelessWidget {
   final bool isPassword;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
+  final TextInputType? keyboardType;
 
   const CustomTextField({
     super.key,
@@ -13,6 +14,7 @@ class CustomTextField extends StatelessWidget {
     this.isPassword = false,
     this.controller,
     this.validator,
+    this.keyboardType,
   });
 
   @override
@@ -21,21 +23,39 @@ class CustomTextField extends StatelessWidget {
       controller: controller,
       obscureText: isPassword,
       validator: validator,
-      style: const TextStyle(
+      keyboardType: keyboardType,
+      style: TextStyle(
         fontFamily: AppConstants.fontFamily,
         fontSize: 16,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
       ),
       decoration: InputDecoration(
         hintText: placeholder,
         hintStyle: TextStyle(
-          color: Colors.grey[500],
+          color: Theme.of(context).hintColor,
           fontFamily: AppConstants.fontFamily,
         ),
         filled: true,
-        fillColor: Colors.grey[100],
+        fillColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey[800]
+            : Colors.grey[100],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.cardRadius),
           borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+          borderSide: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+          borderSide: BorderSide(
+            color: Theme.of(context).primaryColor,
+            width: 2,
+          ),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppConstants.smallPadding,

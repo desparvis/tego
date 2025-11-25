@@ -4,6 +4,8 @@ import 'sign_in_screen.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/preferences_service.dart';
 import '../../core/utils/theme_notifier.dart';
+import '../../core/utils/language_notifier.dart';
+import '../../core/utils/app_localizations_helper.dart';
 import '../widgets/bottom_navigation_widget.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -29,7 +31,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _username = PreferencesService.getUsername();
       _themeMode = PreferencesService.getThemeMode();
-      _language = PreferencesService.getLanguage();
+      final langCode = PreferencesService.getLanguage();
+      _language = langCode == 'rw' ? 'Kinyarwanda' : 'English';
       _notificationsEnabled = PreferencesService.getNotificationsEnabled();
     });
   }
@@ -96,7 +99,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         statusBarBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppConstants.backgroundGray,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Column(
           children: [
             // Custom Header
@@ -125,10 +128,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             AppConstants.cardRadius,
                           ),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            'Settings',
-                            style: TextStyle(
+                            AppLocalizationsHelper.of(context).settings,
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -210,8 +213,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Settings',
+              Text(
+                AppLocalizationsHelper.of(context).settings,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -339,22 +342,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ListTile(
                 title: const Text('English'),
                 onTap: () async {
-                  await PreferencesService.setLanguage('English');
+                  await PreferencesService.setLanguage('en');
                   if (!mounted) return;
                   setState(() {
                     _language = 'English';
                   });
+                  LanguageNotifier().notifyLanguageChanged();
                   navigator.pop();
                 },
               ),
               ListTile(
                 title: const Text('Kinyarwanda'),
                 onTap: () async {
-                  await PreferencesService.setLanguage('Kinyarwanda');
+                  await PreferencesService.setLanguage('rw');
                   if (!mounted) return;
                   setState(() {
                     _language = 'Kinyarwanda';
                   });
+                  LanguageNotifier().notifyLanguageChanged();
                   navigator.pop();
                 },
               ),
@@ -386,7 +391,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppConstants.cardRadius),
           boxShadow: [
             BoxShadow(
@@ -419,7 +424,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: isLogout ? Colors.red : AppConstants.textDark,
+                  color: isLogout ? Colors.red : Theme.of(context).textTheme.bodyLarge?.color,
                   fontFamily: AppConstants.fontFamily,
                 ),
               ),
@@ -442,7 +447,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppConstants.cardRadius),
         boxShadow: [
           BoxShadow(
@@ -466,10 +471,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: AppConstants.textDark,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
                 fontFamily: AppConstants.fontFamily,
               ),
             ),

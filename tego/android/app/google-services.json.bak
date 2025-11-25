@@ -1,0 +1,92 @@
+{
+  "project_info": {
+    "project_number": "285822024847",
+    "project_id": "tego-d918b",
+    "storage_bucket": "tego-d918b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:285822024847:android:811149d88011f30a6e44fa",
+        "android_client_info": {
+          "package_name": "com.example.tego"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "285822024847-j87rsbscvv9p37p55u0fsmbgkd2iplsm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuXNJ4GCpLttFxtC49QNHhX1Zli-hY9os"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "285822024847-j87rsbscvv9p37p55u0fsmbgkd2iplsm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "285822024847-gbv283uq32oep4gu27vghctk58oecq71.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.tego"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+{
+  "project_info": {
+    "project_number": "285822024847",
+    "project_id": "tego-d918b",
+    "storage_bucket": "tego-d918b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:285822024847:android:811149d88011f30a6e44fa",
+        "android_client_info": {
+          "package_name": "com.example.tego"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "285822024847-j87rsbscvv9p37p55u0fsmbgkd2iplsm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuXNJ4GCpLttFxtC49QNHhX1Zli-hY9os"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "285822024847-j87rsbscvv9p37p55u0fsmbgkd2iplsm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "285822024847-gbv283uq32oep4gu27vghctk58oecq71.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.tego"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

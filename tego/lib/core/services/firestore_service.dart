@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class FirestoreService {
   FirestoreService._();
@@ -12,10 +13,16 @@ class FirestoreService {
     String documentId,
     Map<String, dynamic> data,
   ) {
-    return _db
-        .collection(collectionPath)
-        .doc(documentId)
-        .set(data, SetOptions(merge: true));
+    debugPrint('FirestoreService.setDocument: $collectionPath/$documentId -> $data');
+    try {
+      return _db
+          .collection(collectionPath)
+          .doc(documentId)
+          .set(data, SetOptions(merge: true));
+    } catch (e, st) {
+      debugPrint('FirestoreService.setDocument ERROR: $e\n$st');
+      rethrow;
+    }
   }
 
   // Add a new document with an auto-generated ID and return the DocumentReference.
@@ -23,7 +30,13 @@ class FirestoreService {
     String collectionPath,
     Map<String, dynamic> data,
   ) {
-    return _db.collection(collectionPath).add(data);
+    debugPrint('FirestoreService.addDocument: $collectionPath -> $data');
+    try {
+      return _db.collection(collectionPath).add(data);
+    } catch (e, st) {
+      debugPrint('FirestoreService.addDocument ERROR: $e\n$st');
+      rethrow;
+    }
   }
 
   // Get a single document snapshot.
@@ -31,7 +44,13 @@ class FirestoreService {
     String collectionPath,
     String documentId,
   ) {
-    return _db.collection(collectionPath).doc(documentId).get();
+    debugPrint('FirestoreService.getDocument: $collectionPath/$documentId');
+    try {
+      return _db.collection(collectionPath).doc(documentId).get();
+    } catch (e, st) {
+      debugPrint('FirestoreService.getDocument ERROR: $e\n$st');
+      rethrow;
+    }
   }
 
   // Stream a collection (useful for realtime lists).
@@ -39,6 +58,7 @@ class FirestoreService {
     String collectionPath, {
     int limit = 50,
   }) {
+    debugPrint('FirestoreService.streamCollection: $collectionPath (limit=$limit)');
     return _db.collection(collectionPath).limit(limit).snapshots();
   }
 
@@ -51,6 +71,7 @@ class FirestoreService {
     final col = _db.collection(collectionPath);
     var query = (queryBuilder != null) ? queryBuilder(col) : col;
     if (limit != null) query = query.limit(limit);
+    debugPrint('FirestoreService.streamCollectionQuery: $collectionPath (limit=$limit)');
     return query.snapshots();
   }
 
@@ -59,12 +80,19 @@ class FirestoreService {
     String collectionPath,
     String documentId,
   ) {
+    debugPrint('FirestoreService.streamDocument: $collectionPath/$documentId');
     return _db.collection(collectionPath).doc(documentId).snapshots();
   }
 
   // Delete a document.
   Future<void> deleteDocument(String collectionPath, String documentId) {
-    return _db.collection(collectionPath).doc(documentId).delete();
+    debugPrint('FirestoreService.deleteDocument: $collectionPath/$documentId');
+    try {
+      return _db.collection(collectionPath).doc(documentId).delete();
+    } catch (e, st) {
+      debugPrint('FirestoreService.deleteDocument ERROR: $e\n$st');
+      rethrow;
+    }
   }
 
   // Paginated get for a collection (one-shot, not realtime). Returns the fetched documents.
@@ -75,6 +103,7 @@ class FirestoreService {
     String orderByField = 'timestamp',
     bool descending = true,
   }) async {
+    debugPrint('FirestoreService.paginateCollection: $collectionPath (orderBy=$orderByField, limit=$limit)');
     Query<Map<String, dynamic>> query = _db
         .collection(collectionPath)
         .orderBy(orderByField, descending: descending)
@@ -90,7 +119,13 @@ class FirestoreService {
     String documentId,
     Map<String, dynamic> fields,
   ) {
-    return _db.collection(collectionPath).doc(documentId).update(fields);
+    debugPrint('FirestoreService.updateDocumentFields: $collectionPath/$documentId -> $fields');
+    try {
+      return _db.collection(collectionPath).doc(documentId).update(fields);
+    } catch (e, st) {
+      debugPrint('FirestoreService.updateDocumentFields ERROR: $e\n$st');
+      rethrow;
+    }
   }
 
   // Example helper to create a user document after sign-up.

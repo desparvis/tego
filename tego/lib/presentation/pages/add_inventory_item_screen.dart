@@ -162,18 +162,24 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
                   const SizedBox(height: 16),
 
                   // Selling Price Preview
-                  if (_stockCostController.text.isNotEmpty && _intendedProfitController.text.isNotEmpty)
+                  if (_stockCostController.text.isNotEmpty &&
+                      _intendedProfitController.text.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: Colors.green.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green.withOpacity(0.3)),
+                        border: Border.all(
+                          color: Colors.green.withOpacity(0.3),
+                        ),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Selling Price:', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text(
+                            'Selling Price:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           Text(
                             '${_calculateSellingPrice().toStringAsFixed(0)} RWF',
                             style: const TextStyle(
@@ -191,16 +197,23 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
                   BlocBuilder<InventoryBloc, InventoryState>(
                     builder: (context, state) {
                       return ElevatedButton(
-                        onPressed: state is InventoryLoading ? null : _saveItem,
+                        onPressed: state is InventoryLoading
+                            ? null
+                            : _saveItem,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF7430EB),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         child: state is InventoryLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
                             : Text(
                                 isEditing ? 'Update Item' : 'Add Item',
-                                style: const TextStyle(fontSize: 16, color: Colors.white),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
                               ),
                       );
                     },

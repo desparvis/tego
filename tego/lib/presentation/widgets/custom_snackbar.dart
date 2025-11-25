@@ -58,11 +58,10 @@ class CustomSnackBar {
         ),
         backgroundColor: colors,
         duration: duration,
-        behavior: SnackBarBehavior.floating,
+        behavior: SnackBarBehavior.fixed,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.cardRadius),
         ),
-        margin: const EdgeInsets.all(16),
         elevation: 8,
       ),
     );

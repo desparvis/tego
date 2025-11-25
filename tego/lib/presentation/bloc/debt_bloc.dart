@@ -50,6 +50,13 @@ class DebtOperationSuccess extends DebtState {
   List<Object?> get props => [message];
 }
 
+class DebtError extends DebtState {
+  final String message;
+  DebtError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
 class DebtBloc extends Bloc<DebtEvent, DebtState> {
   DebtBloc() : super(DebtInitial()) {
     on<LoadDebts>(_onLoadDebts);
@@ -80,7 +87,7 @@ class DebtBloc extends Bloc<DebtEvent, DebtState> {
       emit(DebtOperationSuccess('Debt added successfully'));
       add(LoadDebts());
     } catch (e) {
-      emit(DebtOperationSuccess('Failed to add debt'));
+      emit(DebtError('Failed to add debt: $e'));
     }
   }
 
@@ -90,7 +97,7 @@ class DebtBloc extends Bloc<DebtEvent, DebtState> {
       emit(DebtOperationSuccess('Debt marked as paid'));
       add(LoadDebts());
     } catch (e) {
-      emit(DebtOperationSuccess('Failed to update debt'));
+      emit(DebtError('Failed to update debt: $e'));
     }
   }
 }

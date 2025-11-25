@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/services/firestore_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/utils/preferences_service.dart';
 import 'sign_in_screen.dart';
 import 'landing_screen.dart';
 import '../../core/constants/app_constants.dart';
@@ -48,6 +49,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: password,
       );
 
+      // Update Firebase Auth user profile with display name
+      await cred.user!.updateDisplayName(_nameController.text.trim());
+      
       // Send verification email
       await cred.user!.sendEmailVerification();
       
@@ -58,6 +62,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           'displayName': _nameController.text.trim(),
           'createdAt': FieldValue.serverTimestamp(),
         });
+        
+        // Mark first launch as complete for new users
+        await PreferencesService.setFirstLaunchComplete();
       }
 
       if (!mounted) return;
@@ -109,6 +116,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'displayName': result.user!.displayName ?? '',
         'createdAt': FieldValue.serverTimestamp(),
       });
+      
+      // Mark first launch as complete for new users
+      await PreferencesService.setFirstLaunchComplete();
       navigator.pop(); // dismiss
       navigator.pushReplacement(
         MaterialPageRoute(builder: (context) => const LandingScreen()),

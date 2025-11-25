@@ -11,7 +11,7 @@ class AppConstants {
   static const Color textLight = Color(0xFF757575);
   static const Color backgroundWhite = Color(0xFFFFFFFF);
   static const Color backgroundGray = Color(0xFFF5F5F5);
-  static const Color successGreen = Color(0xFF10B981);
+  static const Color successGreen = Color(0xFF7B4EFF);
   static const Color errorRed = Color(0xFFEF4444);
   static const Color warningOrange = Color(0xFFF59E0B);
   

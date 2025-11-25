@@ -35,7 +35,11 @@ class _DebtScreenState extends State<DebtScreen> {
         listener: (context, state) {
           if (state is DebtOperationSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+              SnackBar(content: Text(state.message), backgroundColor: Colors.green),
+            );
+          } else if (state is DebtError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
             );
           }
         },

@@ -32,9 +32,9 @@ class Debt extends Equatable {
       'amount': amount,
       'type': type.name,
       'description': description,
-      'dueDate': dueDate,
+      'dueDate': dueDate.toIso8601String(),
       'isPaid': isPaid,
-      'createdAt': createdAt,
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 
@@ -45,9 +45,9 @@ class Debt extends Equatable {
       amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
       type: DebtType.values.firstWhere((e) => e.name == map['type'], orElse: () => DebtType.receivable),
       description: map['description'] ?? '',
-      dueDate: map['dueDate']?.toDate() ?? DateTime.now(),
+      dueDate: map['dueDate'] is String ? DateTime.parse(map['dueDate']) : (map['dueDate']?.toDate() ?? DateTime.now()),
       isPaid: map['isPaid'] ?? false,
-      createdAt: map['createdAt']?.toDate() ?? DateTime.now(),
+      createdAt: map['createdAt'] is String ? DateTime.parse(map['createdAt']) : (map['createdAt']?.toDate() ?? DateTime.now()),
     );
   }
 }

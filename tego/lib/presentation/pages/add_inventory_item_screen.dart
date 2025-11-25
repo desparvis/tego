@@ -39,9 +39,7 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
   Widget build(BuildContext context) {
     final isEditing = widget.item != null;
     
-    return BlocProvider(
-      create: (context) => InventoryBloc(),
-      child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text(isEditing ? 'Edit Item' : 'Add Item'),
           backgroundColor: const Color(0xFF7430EB),
@@ -49,10 +47,22 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
         body: BlocListener<InventoryBloc, InventoryState>(
           listener: (context, state) {
             if (state is InventoryOperationSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: const Color(0xFF7B4EFF),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.fixed,
+                ),
+              );
               Navigator.pop(context);
             } else if (state is InventoryError) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 3),
+                ),
               );
             }
           },
@@ -200,8 +210,7 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   double _calculateSellingPrice() {

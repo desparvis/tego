@@ -11,6 +11,7 @@ import 'presentation/bloc/sales_list_bloc.dart';
 import 'presentation/bloc/app_state_bloc.dart';
 import 'presentation/bloc/debt_bloc.dart';
 import 'presentation/bloc/reminders_bloc.dart';
+import 'presentation/bloc/inventory_bloc.dart';
 import 'data/repositories/sales_repository_impl.dart';
 import 'data/repositories/expense_repository_impl.dart';
 import 'domain/usecases/add_sale_usecase.dart';
@@ -71,17 +72,23 @@ class _MyAppState extends State<MyApp> {
 
   void _loadPreferences() {
     final savedTheme = PreferencesService.getThemeMode();
+    final isFirstLaunch = PreferencesService.isFirstLaunch();
     
     setState(() {
-      switch (savedTheme) {
-        case 'dark':
-          _themeMode = ThemeMode.dark;
-          break;
-        case 'light':
-          _themeMode = ThemeMode.light;
-          break;
-        default:
-          _themeMode = ThemeMode.system;
+      // Default to light theme for new users, use saved preference for existing users
+      if (isFirstLaunch) {
+        _themeMode = ThemeMode.light;
+      } else {
+        switch (savedTheme) {
+          case 'dark':
+            _themeMode = ThemeMode.dark;
+            break;
+          case 'light':
+            _themeMode = ThemeMode.light;
+            break;
+          default:
+            _themeMode = ThemeMode.light; // Default to light instead of system
+        }
       }
       
       // Use English for system components, custom translations handle Kinyarwanda
@@ -146,6 +153,9 @@ class _MyAppState extends State<MyApp> {
           ),
           BlocProvider<RemindersBloc>(
             create: (context) => RemindersBloc(),
+          ),
+          BlocProvider<InventoryBloc>(
+            create: (context) => InventoryBloc(),
           ),
         ],
         child: MaterialApp(

@@ -37,7 +37,7 @@ service cloud.firestore {
                       && request.resource.data.keys().hasAll(['amount', 'category', 'description', 'date'])
                       && request.resource.data.amount is number
                       && request.resource.data.amount > 0
-                      && request.resource.data.category in ['Rent', 'Utilities', 'Supplies', 'Marketing', 'Transport', 'Other']
+                      && request.resource.data.category in ['Business - Rent', 'Business - Utilities', 'Business - Supplies', 'Business - Marketing', 'Personal - Food', 'Personal - Transport', 'Personal - Other']
                       && request.resource.data.description is string
                       && request.resource.data.description.size() > 0
                       && request.resource.data.date is string
@@ -48,7 +48,7 @@ service cloud.firestore {
                       && request.auth.uid == userId
                       && request.resource.data.amount is number
                       && request.resource.data.amount > 0
-                      && request.resource.data.category in ['Rent', 'Utilities', 'Supplies', 'Marketing', 'Transport', 'Other']
+                      && request.resource.data.category in ['Business - Rent', 'Business - Utilities', 'Business - Supplies', 'Business - Marketing', 'Personal - Food', 'Personal - Transport', 'Personal - Other']
                       && request.resource.data.description is string
                       && request.resource.data.description.size() > 0
                       && request.resource.data.date is string
@@ -82,6 +82,30 @@ service cloud.firestore {
                       && request.resource.data.sellingPrice >= 0
                       && request.resource.data.quantity is number
                       && request.resource.data.quantity >= 0;
+      }
+
+      // Debts subcollection with validation
+      match /debts/{debtId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        allow create: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.keys().hasAll(['customerName', 'amount', 'type', 'description'])
+                      && request.resource.data.customerName is string
+                      && request.resource.data.customerName.size() > 0
+                      && request.resource.data.amount is number
+                      && request.resource.data.amount > 0
+                      && request.resource.data.type in ['receivable', 'payable']
+                      && request.resource.data.description is string;
+        
+        allow update: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.customerName is string
+                      && request.resource.data.customerName.size() > 0
+                      && request.resource.data.amount is number
+                      && request.resource.data.amount > 0
+                      && request.resource.data.type in ['receivable', 'payable']
+                      && request.resource.data.description is string;
       }
 
       // Reminders subcollection

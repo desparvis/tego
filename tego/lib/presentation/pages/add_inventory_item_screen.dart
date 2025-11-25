@@ -181,7 +181,7 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
                   BlocBuilder<InventoryBloc, InventoryState>(
                     builder: (context, state) {
                       return ElevatedButton(
-                        onPressed: state is InventoryLoading ? null : _saveItem,
+                        onPressed: state is InventoryLoading ? null : () => _saveItem(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF7430EB),
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -210,7 +210,7 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
     return stockCost + intendedProfit;
   }
 
-  void _saveItem() {
+  void _saveItem(BuildContext ctx) {
     if (!_formKey.currentState!.validate()) return;
 
     final item = InventoryItem(
@@ -223,9 +223,9 @@ class _AddInventoryItemScreenState extends State<AddInventoryItemScreen> {
     );
 
     if (widget.item != null) {
-      context.read<InventoryBloc>().add(UpdateInventoryItem(item));
+      ctx.read<InventoryBloc>().add(UpdateInventoryItem(item));
     } else {
-      context.read<InventoryBloc>().add(AddInventoryItem(item));
+      ctx.read<InventoryBloc>().add(AddInventoryItem(item));
     }
   }
 

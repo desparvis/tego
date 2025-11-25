@@ -144,7 +144,7 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                             horizontal: 24,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.red[400],
+                            color: const Color(0xFF7430EB),
                             borderRadius: BorderRadius.circular(
                               AppConstants.cardRadius,
                             ),
@@ -293,7 +293,7 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      color: Colors.red[400],
+      color: const Color(0xFF7430EB),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(

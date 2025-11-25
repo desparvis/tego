@@ -2,10 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'reminders_screen.dart';
+import 'expense_recording_screen.dart';
+import 'debt_screen.dart';
 import '../../core/services/firestore_service.dart';
 import 'sign_in_screen.dart';
-import 'expense_recording_screen.dart';
+
 import 'expense_list_screen.dart';
+import 'inventory_screen.dart';
+import 'profit_screen.dart';
 import '../../core/utils/preferences_service.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../widgets/floating_action_menu.dart';
@@ -313,7 +318,7 @@ class _LandingScreenState extends State<LandingScreen> {
               ),
               const SizedBox(height: 28),
 
-              // === EXPENSES & BALANCE (SIDE BY SIDE) ===
+              // === EXPENSES & INVENTORY (SIDE BY SIDE) ===
               Row(
                 children: [
                   Expanded(
@@ -368,14 +373,39 @@ class _LandingScreenState extends State<LandingScreen> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ExpenseRecordingScreen(),
+                          builder: (context) => const InventoryScreen(),
                         ),
                       ),
-                      child: _buildStatCard(
-                        title: 'Add Expense',
-                        value: 'Tap to add',
-                        color: const Color(0xFFF4A4A4),
-                        icon: Icons.add,
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: (() {
+                          final user = FirebaseAuth.instance.currentUser;
+                          return (user == null)
+                              ? null
+                              : FirestoreService.instance.streamCollection(
+                                  'users/${user.uid}/inventory',
+                                  limit: 1000,
+                                );
+                        })(),
+                        builder: (context, snapshot) {
+                          int totalItems = 0;
+                          int lowStockItems = 0;
+                          if (snapshot.hasData) {
+                            totalItems = snapshot.data!.docs.length;
+                            for (final doc in snapshot.data!.docs) {
+                              final data = doc.data() as Map<String, dynamic>;
+                              final quantity = (data['quantity'] as num?)?.toInt() ?? 0;
+                              final minStock = (data['minStockLevel'] as num?)?.toInt() ?? 5;
+                              if (quantity <= minStock) lowStockItems++;
+                            }
+                          }
+                          return _buildStatCard(
+                            title: 'Inventory Items',
+                            value: '$totalItems items',
+                            color: const Color(0xFF4CAF50),
+                            icon: Icons.inventory,
+                            subtitle: lowStockItems > 0 ? '$lowStockItems low stock' : 'All good',
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -386,70 +416,153 @@ class _LandingScreenState extends State<LandingScreen> {
               // === PROFIT CARD ===
               _buildSectionTitle('Profit'),
               const SizedBox(height: 12),
-              StreamBuilder<QuerySnapshot>(
-                stream: (() {
-                  final user = FirebaseAuth.instance.currentUser;
-                  return (user == null)
-                      ? null
-                      : FirestoreService.instance.streamCollection(
-                          'users/${user.uid}/sales',
-                          limit: 1000,
-                        );
-                })(),
-                builder: (context, salesSnapshot) {
-                  return StreamBuilder<QuerySnapshot>(
-                    stream: (() {
-                      final user = FirebaseAuth.instance.currentUser;
-                      return (user == null)
-                          ? null
-                          : FirestoreService.instance.streamCollection(
-                              'users/${user.uid}/expenses',
-                              limit: 1000,
-                            );
-                    })(),
-                    builder: (context, expenseSnapshot) {
-                      double totalSales = 0.0;
-                      double totalExpenses = 0.0;
-                      
-                      if (salesSnapshot.hasData) {
-                        for (final doc in salesSnapshot.data!.docs) {
-                          final data = doc.data() as Map<String, dynamic>;
-                          final amt = (data['amount'] is num)
-                              ? (data['amount'] as num).toDouble()
-                              : double.tryParse('${data['amount']}') ?? 0.0;
-                          totalSales += amt;
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfitScreen(),
+                  ),
+                ),
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: (() {
+                    final user = FirebaseAuth.instance.currentUser;
+                    return (user == null)
+                        ? null
+                        : FirestoreService.instance.streamCollection(
+                            'users/${user.uid}/sales',
+                            limit: 1000,
+                          );
+                  })(),
+                  builder: (context, salesSnapshot) {
+                    return StreamBuilder<QuerySnapshot>(
+                      stream: (() {
+                        final user = FirebaseAuth.instance.currentUser;
+                        return (user == null)
+                            ? null
+                            : FirestoreService.instance.streamCollection(
+                                'users/${user.uid}/expenses',
+                                limit: 1000,
+                              );
+                      })(),
+                      builder: (context, expenseSnapshot) {
+                        double totalSales = 0.0;
+                        double totalExpenses = 0.0;
+                        
+                        if (salesSnapshot.hasData) {
+                          for (final doc in salesSnapshot.data!.docs) {
+                            final data = doc.data() as Map<String, dynamic>;
+                            final amt = (data['amount'] is num)
+                                ? (data['amount'] as num).toDouble()
+                                : double.tryParse('${data['amount']}') ?? 0.0;
+                            totalSales += amt;
+                          }
                         }
-                      }
-                      
-                      if (expenseSnapshot.hasData) {
-                        for (final doc in expenseSnapshot.data!.docs) {
-                          final data = doc.data() as Map<String, dynamic>;
-                          final amt = (data['amount'] is num)
-                              ? (data['amount'] as num).toDouble()
-                              : double.tryParse('${data['amount']}') ?? 0.0;
-                          totalExpenses += amt;
+                        
+                        if (expenseSnapshot.hasData) {
+                          for (final doc in expenseSnapshot.data!.docs) {
+                            final data = doc.data() as Map<String, dynamic>;
+                            final amt = (data['amount'] is num)
+                                ? (data['amount'] as num).toDouble()
+                                : double.tryParse('${data['amount']}') ?? 0.0;
+                            totalExpenses += amt;
+                          }
                         }
-                      }
-                      
-                      final profit = totalSales - totalExpenses;
-                      
-                      return _buildLargeCard(
-                        color: const Color(0xFFD4A4EB),
-                        height: 80,
-                        child: Center(
-                          child: Text(
-                            '${profit.toStringAsFixed(0)} RWF',
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
+                        
+                        final profit = totalSales - totalExpenses;
+                        
+                        return _buildLargeCard(
+                          color: const Color(0xFFD4A4EB),
+                          height: 80,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '${profit.toStringAsFixed(0)} RWF',
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.arrow_forward_ios,
+                                color: Colors.black54,
+                                size: 16,
+                              ),
+                            ],
                           ),
-                        ),
-                      );
-                    },
-                  );
-                },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              // === QUICK ACCESS SECTION ===
+              _buildSectionTitle('Quick Access'),
+              const SizedBox(height: 12),
+              
+              // First row - Inventory and Expenses
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      'Inventory',
+                      'Manage stock',
+                      Icons.inventory,
+                      const Color(0xFF4CAF50),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const InventoryScreen()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      'Expenses',
+                      'Add expense',
+                      Icons.receipt,
+                      const Color(0xFFFF9800),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ExpenseRecordingScreen()),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              
+              // Second row - Reminders and Profit
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      'Reminders',
+                      'View alerts',
+                      Icons.notifications,
+                      const Color(0xFF2196F3),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const RemindersScreen()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      'Debts',
+                      'Track debts',
+                      Icons.account_balance_wallet,
+                      const Color(0xFF9C27B0),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const DebtScreen()),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 40),
             ],
@@ -535,6 +648,7 @@ class _LandingScreenState extends State<LandingScreen> {
     required String value,
     required Color color,
     required IconData icon,
+    String? subtitle,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -570,7 +684,57 @@ class _LandingScreenState extends State<LandingScreen> {
               color: Colors.black.withValues(alpha: 0.7),
             ),
           ),
+          if (subtitle != null)
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.black.withValues(alpha: 0.5),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  // === HELPER: Quick Access Card ===
+  Widget _buildQuickAccessCard(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

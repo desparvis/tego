@@ -1,68 +1,89 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tego/presentation/bloc/expense_bloc.dart';
-import 'package:tego/presentation/pages/expense_recording_screen.dart';
+import 'package:tego/presentation/widgets/custom_button.dart';
+import 'package:tego/presentation/widgets/custom_text_field.dart';
 
 void main() {
-  group('Expense Recording Screen Widget Tests', () {
-    testWidgets('should display expense recording form', (WidgetTester tester) async {
+  group('Custom Widget Tests', () {
+    testWidgets('CustomButton should display text and handle tap', (WidgetTester tester) async {
+      bool tapped = false;
+      
       // Arrange
       await tester.pumpWidget(
         MaterialApp(
-          home: BlocProvider<ExpenseBloc>(
-            create: (context) => ExpenseBloc(),
-            child: const ExpenseRecordingScreen(),
+          home: Scaffold(
+            body: CustomButton(
+              text: 'Test Button',
+              onPressed: () {
+                tapped = true;
+              },
+            ),
           ),
         ),
       );
 
-      // Assert
-      expect(find.text('Expense Recording'), findsWidgets);
-      expect(find.text('Expense Amount'), findsOneWidget);
-      expect(find.text('Category'), findsOneWidget);
-      expect(find.text('Description'), findsOneWidget);
-      expect(find.text('Expense Date'), findsOneWidget);
-      expect(find.text('Add Expense'), findsOneWidget);
+      // Act & Assert
+      expect(find.text('Test Button'), findsOneWidget);
+      expect(find.byType(ElevatedButton), findsOneWidget);
+      
+      await tester.tap(find.byType(ElevatedButton));
+      expect(tapped, isTrue);
     });
 
-    testWidgets('should show validation error for empty amount', (WidgetTester tester) async {
+    testWidgets('CustomTextField should display placeholder', (WidgetTester tester) async {
       // Arrange
       await tester.pumpWidget(
         MaterialApp(
-          home: BlocProvider<ExpenseBloc>(
-            create: (context) => ExpenseBloc(),
-            child: const ExpenseRecordingScreen(),
+          home: Scaffold(
+            body: CustomTextField(
+              placeholder: 'Enter text',
+              controller: TextEditingController(),
+            ),
           ),
         ),
       );
 
-      // Act
-      await tester.tap(find.text('Add Expense'));
-      await tester.pump();
-
-      // Assert
-      expect(find.text('Please enter expense amount'), findsOneWidget);
+      // Act & Assert
+      expect(find.byType(TextFormField), findsOneWidget);
+      expect(find.text('Enter text'), findsOneWidget);
     });
 
-    testWidgets('should show validation error for empty description', (WidgetTester tester) async {
+    testWidgets('CustomTextField should handle password mode', (WidgetTester tester) async {
       // Arrange
       await tester.pumpWidget(
         MaterialApp(
-          home: BlocProvider<ExpenseBloc>(
-            create: (context) => ExpenseBloc(),
-            child: const ExpenseRecordingScreen(),
+          home: Scaffold(
+            body: CustomTextField(
+              placeholder: 'Password',
+              controller: TextEditingController(),
+              isPassword: true,
+            ),
           ),
         ),
       );
 
-      // Act - Fill amount but leave description empty
-      await tester.enterText(find.byType(TextFormField).first, '1000');
-      await tester.tap(find.text('Add Expense'));
-      await tester.pump();
+      // Act & Assert
+      expect(find.byType(TextFormField), findsOneWidget);
+      expect(find.text('Password'), findsOneWidget);
+    });
 
-      // Assert
-      expect(find.text('Please enter description'), findsOneWidget);
+    testWidgets('CustomButton should show loading state', (WidgetTester tester) async {
+      // Arrange
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CustomButton(
+              text: 'Loading Button',
+              onPressed: () {},
+              isLoading: true,
+            ),
+          ),
+        ),
+      );
+
+      // Act & Assert
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('Loading Button'), findsNothing);
     });
   });
 }

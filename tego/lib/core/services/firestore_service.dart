@@ -13,7 +13,9 @@ class FirestoreService {
     String documentId,
     Map<String, dynamic> data,
   ) {
-    debugPrint('FirestoreService.setDocument: $collectionPath/$documentId -> $data');
+    debugPrint(
+      'FirestoreService.setDocument: $collectionPath/$documentId -> $data',
+    );
     try {
       return _db
           .collection(collectionPath)
@@ -58,7 +60,9 @@ class FirestoreService {
     String collectionPath, {
     int limit = 50,
   }) {
-    debugPrint('FirestoreService.streamCollection: $collectionPath (limit=$limit)');
+    debugPrint(
+      'FirestoreService.streamCollection: $collectionPath (limit=$limit)',
+    );
     return _db.collection(collectionPath).limit(limit).snapshots();
   }
 
@@ -71,7 +75,9 @@ class FirestoreService {
     final col = _db.collection(collectionPath);
     var query = (queryBuilder != null) ? queryBuilder(col) : col;
     if (limit != null) query = query.limit(limit);
-    debugPrint('FirestoreService.streamCollectionQuery: $collectionPath (limit=$limit)');
+    debugPrint(
+      'FirestoreService.streamCollectionQuery: $collectionPath (limit=$limit)',
+    );
     return query.snapshots();
   }
 
@@ -103,7 +109,9 @@ class FirestoreService {
     String orderByField = 'timestamp',
     bool descending = true,
   }) async {
-    debugPrint('FirestoreService.paginateCollection: $collectionPath (orderBy=$orderByField, limit=$limit)');
+    debugPrint(
+      'FirestoreService.paginateCollection: $collectionPath (orderBy=$orderByField, limit=$limit)',
+    );
     Query<Map<String, dynamic>> query = _db
         .collection(collectionPath)
         .orderBy(orderByField, descending: descending)
@@ -119,7 +127,9 @@ class FirestoreService {
     String documentId,
     Map<String, dynamic> fields,
   ) {
-    debugPrint('FirestoreService.updateDocumentFields: $collectionPath/$documentId -> $fields');
+    debugPrint(
+      'FirestoreService.updateDocumentFields: $collectionPath/$documentId -> $fields',
+    );
     try {
       return _db.collection(collectionPath).doc(documentId).update(fields);
     } catch (e, st) {

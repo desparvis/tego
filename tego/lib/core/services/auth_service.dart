@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart';
 
 class AuthService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -36,6 +37,13 @@ class AuthService {
   // Google Sign In
   static Future<UserCredential?> signInWithGoogle() async {
     try {
+      if (kIsWeb) {
+        // On web, use Firebase popup flow. Ensure Google provider is enabled
+        // in your Firebase Console and your app's domain is authorized.
+        final provider = GoogleAuthProvider();
+        return await _auth.signInWithPopup(provider);
+      }
+
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null;
 

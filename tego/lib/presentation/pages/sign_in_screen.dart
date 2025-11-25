@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'landing_screen.dart';
 import 'sign_up_screen.dart';
 import 'password_reset_screen.dart';
+import '../../core/services/auth_service.dart';
 import '../../core/constants/app_constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
@@ -39,7 +40,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   Future<void> _performSignIn() async {
     setState(() => _isLoading = true);
-    
+
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
@@ -48,17 +49,17 @@ class _SignInScreenState extends State<SignInScreen> {
         email: email,
         password: password,
       );
-      
+
       if (!mounted) return;
       setState(() => _isLoading = false);
-      
+
       // Create/update user document
       await FirestoreService.instance.createUserDoc(credential.user!.uid, {
         'email': credential.user!.email,
         'displayName': credential.user!.displayName ?? '',
         'lastSignIn': FieldValue.serverTimestamp(),
       });
-      
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -80,22 +81,41 @@ class _SignInScreenState extends State<SignInScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Simple Google sign-in placeholder - would need google_sign_in package
-      CustomSnackBar.show(
+      final credential = await AuthService.signInWithGoogle();
+
+      if (credential == null) {
+        if (mounted) {
+          CustomSnackBar.show(
+            context,
+            message: 'Google sign up cancelled or failed',
+            type: SnackBarType.error,
+          );
+        }
+        return;
+      }
+
+      // Create/update user document
+      await FirestoreService.instance.createUserDoc(credential.user!.uid, {
+        'email': credential.user!.email,
+        'displayName': credential.user!.displayName ?? '',
+        'lastSignIn': FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
         context,
-        message: 'Google sign-in not implemented yet',
-        type: SnackBarType.error,
+        MaterialPageRoute(builder: (context) => const LandingScreen()),
       );
     } catch (e) {
-      CustomSnackBar.show(
-        context,
-        message: e.toString(),
-        type: SnackBarType.error,
-      );
-    } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        CustomSnackBar.show(
+          context,
+          message: e.toString(),
+          type: SnackBarType.error,
+        );
       }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -172,7 +192,9 @@ class _SignInScreenState extends State<SignInScreen> {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter your email';
                                 }
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                if (!RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                ).hasMatch(value)) {
                                   return 'Please enter a valid email';
                                 }
                                 return null;
@@ -196,9 +218,9 @@ class _SignInScreenState extends State<SignInScreen> {
                                 return null;
                               },
                             ),
-                            
+
                             const SizedBox(height: 8),
-                            
+
                             // Forgot Password Link
                             Align(
                               alignment: Alignment.centerRight,

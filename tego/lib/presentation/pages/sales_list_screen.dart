@@ -399,6 +399,7 @@ class _SalesListScreenState extends State<SalesListScreen> {
         final data = doc.data() as Map<String, dynamic>;
         final amount = data['amount']?.toString() ?? '';
         final date = data['date']?.toString() ?? '';
+        final item = data['item']?.toString() ?? 'Item not specified';
         final timestamp = data['timestamp'] as Timestamp?;
         final isToday = timestamp != null && _isToday(timestamp.toDate());
         
@@ -445,6 +446,16 @@ class _SalesListScreenState extends State<SalesListScreen> {
                                 fontWeight: FontWeight.w600,
                                 fontFamily: AppConstants.fontFamily,
                                 letterSpacing: -0.2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: ScreenUtils.h(2)),
+                            Text(
+                              item,
+                              style: TextStyle(
+                                fontSize: ScreenUtils.sp(12),
+                                color: Colors.grey[600],
+                                fontFamily: AppConstants.fontFamily,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),

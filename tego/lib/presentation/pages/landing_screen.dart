@@ -2,8 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'reminders_screen.dart';
 import 'expense_recording_screen.dart';
+import 'cash_flow_screen.dart';
+import 'reports_screen.dart';
+import 'reminders_screen.dart';
 import 'debt_screen.dart';
 import '../../core/services/firestore_service.dart';
 import 'sign_in_screen.dart';
@@ -12,6 +14,7 @@ import 'expense_list_screen.dart';
 import 'inventory_screen.dart';
 import 'profit_screen.dart';
 import '../../core/utils/preferences_service.dart';
+import '../../core/utils/app_localizations_helper.dart';
 import '../widgets/bottom_navigation_widget.dart';
 import '../widgets/floating_action_menu.dart';
 
@@ -86,7 +89,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Welcome back',
+                  AppLocalizationsHelper.of(context).welcomeBack,
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.white.withValues(alpha: 0.9),
@@ -148,7 +151,7 @@ class _LandingScreenState extends State<LandingScreen> {
               const SizedBox(height: 14),
 
               // === ALL TIME SALES CARD (FULL WIDTH) ===
-              _buildSectionTitle('All time sales'),
+              _buildSectionTitle(AppLocalizationsHelper.of(context).sales),
               const SizedBox(height: 12),
 
               // Big purple card showing aggregated sales from Firestore
@@ -358,7 +361,7 @@ class _LandingScreenState extends State<LandingScreen> {
                             }
                           }
                           return _buildStatCard(
-                            title: 'Today\'s expenses',
+                            title: AppLocalizationsHelper.of(context).todaysExpenses,
                             value: '${todayExpenses.toStringAsFixed(0)} RWF',
                             color: const Color(0xFFD4A4EB),
                             icon: Icons.trending_down,
@@ -399,11 +402,11 @@ class _LandingScreenState extends State<LandingScreen> {
                             }
                           }
                           return _buildStatCard(
-                            title: 'Inventory Items',
+                            title: AppLocalizationsHelper.of(context).inventoryItems,
                             value: '$totalItems items',
                             color: const Color(0xFF4CAF50),
                             icon: Icons.inventory,
-                            subtitle: lowStockItems > 0 ? '$lowStockItems low stock' : 'All good',
+                            subtitle: lowStockItems > 0 ? '$lowStockItems ${AppLocalizationsHelper.of(context).lowStock}' : AppLocalizationsHelper.of(context).allGood,
                           );
                         },
                       ),
@@ -414,7 +417,7 @@ class _LandingScreenState extends State<LandingScreen> {
               const SizedBox(height: 28),
 
               // === PROFIT CARD ===
-              _buildSectionTitle('Profit'),
+              _buildSectionTitle(AppLocalizationsHelper.of(context).profit),
               const SizedBox(height: 12),
               GestureDetector(
                 onTap: () => Navigator.push(
@@ -476,12 +479,15 @@ class _LandingScreenState extends State<LandingScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                '${profit.toStringAsFixed(0)} RWF',
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                              Flexible(
+                                child: Text(
+                                  '${profit.toStringAsFixed(0)} RWF',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -499,7 +505,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 ),
               ),
               // === QUICK ACCESS SECTION ===
-              _buildSectionTitle('Quick Access'),
+              _buildSectionTitle(AppLocalizationsHelper.of(context).quickAccess),
               const SizedBox(height: 12),
               
               // First row - Inventory and Expenses
@@ -507,8 +513,8 @@ class _LandingScreenState extends State<LandingScreen> {
                 children: [
                   Expanded(
                     child: _buildQuickAccessCard(
-                      'Inventory',
-                      'Manage stock',
+                      AppLocalizationsHelper.of(context).inventory,
+                      AppLocalizationsHelper.of(context).manageStock,
                       Icons.inventory,
                       const Color(0xFF4CAF50),
                       () => Navigator.push(
@@ -520,8 +526,8 @@ class _LandingScreenState extends State<LandingScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildQuickAccessCard(
-                      'Expenses',
-                      'Add expense',
+                      AppLocalizationsHelper.of(context).expenses,
+                      AppLocalizationsHelper.of(context).addExpense,
                       Icons.receipt,
                       const Color(0xFFFF9800),
                       () => Navigator.push(
@@ -534,15 +540,47 @@ class _LandingScreenState extends State<LandingScreen> {
               ),
               const SizedBox(height: 12),
               
-              // Second row - Reminders and Profit
+              // Second row - Cash Flow and Reports
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      'Cash Flow',
+                      'Track flow',
+                      Icons.trending_up,
+                      const Color(0xFF2196F3),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CashFlowScreen()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickAccessCard(
+                      'Reports',
+                      'Credit report',
+                      Icons.assessment,
+                      const Color(0xFF9C27B0),
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ReportsScreen()),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              
+              // Third row - Reminders and Debt Management
               Row(
                 children: [
                   Expanded(
                     child: _buildQuickAccessCard(
                       'Reminders',
-                      'View alerts',
+                      'Set alerts',
                       Icons.notifications,
-                      const Color(0xFF2196F3),
+                      const Color(0xFFE91E63),
                       () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const RemindersScreen()),
@@ -552,10 +590,10 @@ class _LandingScreenState extends State<LandingScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildQuickAccessCard(
-                      'Debts',
+                      'Debt',
                       'Track debts',
                       Icons.account_balance_wallet,
-                      const Color(0xFF9C27B0),
+                      const Color(0xFFFF5722),
                       () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const DebtScreen()),

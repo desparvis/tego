@@ -9,6 +9,8 @@ import 'presentation/bloc/sales_bloc.dart';
 import 'presentation/bloc/sales_cubit.dart';
 import 'presentation/bloc/sales_list_bloc.dart';
 import 'presentation/bloc/app_state_bloc.dart';
+import 'presentation/bloc/debt_bloc.dart';
+import 'presentation/bloc/reminders_bloc.dart';
 import 'data/repositories/sales_repository_impl.dart';
 import 'data/repositories/expense_repository_impl.dart';
 import 'domain/usecases/add_sale_usecase.dart';
@@ -19,8 +21,11 @@ import 'core/state/performance_bloc_observer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'core/utils/preferences_service.dart';
 import 'core/utils/theme_notifier.dart';
+import 'core/utils/language_notifier.dart';
 import 'core/utils/settings_manager.dart';
 import 'package:provider/provider.dart';
+import 'l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,16 +59,19 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.light;
+  Locale _locale = const Locale('en');
 
   @override
   void initState() {
     super.initState();
-    _loadTheme();
-    ThemeNotifier().setThemeChangeListener(_loadTheme);
+    _loadPreferences();
+    ThemeNotifier().setThemeChangeListener(_loadPreferences);
+    LanguageNotifier().setLanguageChangeListener(_loadPreferences);
   }
 
-  void _loadTheme() {
+  void _loadPreferences() {
     final savedTheme = PreferencesService.getThemeMode();
+    
     setState(() {
       switch (savedTheme) {
         case 'dark':
@@ -75,6 +83,9 @@ class _MyAppState extends State<MyApp> {
         default:
           _themeMode = ThemeMode.system;
       }
+      
+      // Use English for system components, custom translations handle Kinyarwanda
+      _locale = const Locale('en');
     });
   }
 
@@ -130,9 +141,25 @@ class _MyAppState extends State<MyApp> {
           BlocProvider<AppStateBloc>(
             create: (context) => AppStateBloc()..add(LoadAppDataEvent()),
           ),
+          BlocProvider<DebtBloc>(
+            create: (context) => DebtBloc(),
+          ),
+          BlocProvider<RemindersBloc>(
+            create: (context) => RemindersBloc(),
+          ),
         ],
         child: MaterialApp(
           title: 'Tego App',
+          locale: _locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en'),
+          ],
           themeMode: _themeMode,
           theme: ThemeData(
             primaryColor: const Color(0xFF7B4EFF),

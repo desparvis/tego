@@ -4,20 +4,19 @@ import '../bloc/debt_bloc.dart';
 import '../../domain/entities/debt.dart';
 import '../widgets/bottom_navigation_widget.dart';
 
-class DebtScreen extends StatelessWidget {
+class DebtScreen extends StatefulWidget {
   const DebtScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => DebtBloc()..add(LoadDebts()),
-      child: const DebtView(),
-    );
-  }
+  State<DebtScreen> createState() => _DebtScreenState();
 }
 
-class DebtView extends StatelessWidget {
-  const DebtView({super.key});
+class _DebtScreenState extends State<DebtScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<DebtBloc>().add(LoadDebts());
+  }
 
   @override
   Widget build(BuildContext context) {

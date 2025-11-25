@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/app_localizations_helper.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/bottom_navigation_widget.dart';
@@ -23,6 +24,7 @@ class SalesRecordingScreen extends StatefulWidget {
 
 class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
   final _amountController = TextEditingController();
+  final _itemController = TextEditingController();
   final _dateController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -47,10 +49,12 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
       context.read<SalesBloc>().add(AddSaleEvent(
         amount: amount,
         date: date,
+        item: _itemController.text.trim(),
       ));
       
       // Clear form immediately for better UX (optimistic update)
       _amountController.clear();
+      _itemController.clear();
       _dateController.text = _formatDate(DateTime.now());
     }
   }
@@ -184,7 +188,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              'Sales Recording',
+              AppLocalizationsHelper.of(context).sales,
               style: TextStyle(
                 fontSize: ResponsiveLayout.getResponsiveFontSize(context, 24),
                 fontWeight: FontWeight.bold,
@@ -220,7 +224,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                 ),
                 SizedBox(width: ScreenUtils.w(12)),
                 Text(
-                  'Sale Amount (RWF)',
+                  AppLocalizationsHelper.of(context).amount,
                   style: TextStyle(
                     fontSize: ScreenUtils.sp(16),
                     fontWeight: FontWeight.w600,
@@ -246,6 +250,47 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
             ),
             SizedBox(height: ScreenUtils.h(24)),
             
+            // Item Sold Field
+            Row(
+              children: [
+                Container(
+                  width: ScreenUtils.w(32),
+                  height: ScreenUtils.w(32),
+                  decoration: BoxDecoration(
+                    color: AppConstants.primaryPurple.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(ScreenUtils.w(8)),
+                  ),
+                  child: Icon(
+                    Icons.shopping_bag_outlined,
+                    color: AppConstants.primaryPurple,
+                    size: ScreenUtils.w(18),
+                  ),
+                ),
+                SizedBox(width: ScreenUtils.w(12)),
+                Text(
+                  'Item Sold',
+                  style: TextStyle(
+                    fontSize: ScreenUtils.sp(16),
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    fontFamily: AppConstants.fontFamily,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: ScreenUtils.h(12)),
+            CustomTextField(
+              placeholder: 'What was sold?',
+              controller: _itemController,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter what was sold';
+                }
+                return null;
+              },
+            ),
+            SizedBox(height: ScreenUtils.h(24)),
+            
             // Sale Date Field
             Row(
               children: [
@@ -264,7 +309,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                 ),
                 SizedBox(width: ScreenUtils.w(12)),
                 Text(
-                  'Sale Date',
+                  AppLocalizationsHelper.of(context).date,
                   style: TextStyle(
                     fontSize: ScreenUtils.sp(16),
                     fontWeight: FontWeight.w600,
@@ -298,7 +343,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
       BlocBuilder<SalesBloc, SalesState>(
         builder: (context, state) {
           return CustomButton(
-            text: 'Add Sale',
+            text: AppLocalizationsHelper.of(context).addSale,
             icon: Icons.add_circle,
             onPressed: state is SalesLoading ? null : _addSale,
             isLoading: state is SalesLoading,
@@ -342,7 +387,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
               SizedBox(width: ScreenUtils.w(16)),
               Expanded(
                 child: Text(
-                  'Sales Recording',
+                  AppLocalizationsHelper.of(context).sales,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: ScreenUtils.sp(20),
@@ -363,6 +408,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
   @override
   void dispose() {
     _amountController.dispose();
+    _itemController.dispose();
     _dateController.dispose();
     super.dispose();
   }

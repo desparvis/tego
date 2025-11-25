@@ -5,6 +5,7 @@ import '../../domain/entities/expense.dart';
 import '../bloc/expense_bloc.dart';
 import 'landing_screen.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/app_localizations_helper.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/bottom_navigation_widget.dart';
@@ -24,15 +25,15 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
   final _dateController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  String _selectedCategory = 'Rent';
+  String _selectedCategory = 'Business - Rent';
   final List<String> _categories = [
-    'Rent',
-    'Utilities',
-    'Supplies',
-    'Transport',
-    'Food',
-    'Marketing',
-    'Other',
+    'Business - Rent',
+    'Business - Utilities', 
+    'Business - Supplies',
+    'Business - Marketing',
+    'Personal - Food',
+    'Personal - Transport',
+    'Personal - Other',
   ];
 
   @override
@@ -47,25 +48,35 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
 
   void _addExpense() {
     if (_formKey.currentState!.validate()) {
-      final amount =
-          double.tryParse(_amountController.text.replaceAll(',', '')) ?? 0.0;
-      final expense = Expense(
-        amount: amount,
-        category: _selectedCategory,
-        description: _descriptionController.text,
-        date: _dateController.text,
-        timestamp: DateTime.now(),
-      );
+      try {
+        final cleanAmount = _amountController.text.replaceAll(',', '').trim();
+        final amount = double.parse(cleanAmount);
+        
+        final expense = Expense(
+          amount: amount,
+          category: _selectedCategory,
+          description: _descriptionController.text.trim(),
+          date: _dateController.text,
+          timestamp: DateTime.now(),
+        );
 
-      context.read<ExpenseBloc>().add(AddExpense(expense));
+        context.read<ExpenseBloc>().add(AddExpense(expense));
 
-      // Clear form immediately for better UX (optimistic update)
-      _amountController.clear();
-      _descriptionController.clear();
-      _dateController.text = _formatDate(DateTime.now());
-      setState(() {
-        _selectedCategory = 'Rent';
-      });
+        // Clear form immediately for better UX (optimistic update)
+        _amountController.clear();
+        _descriptionController.clear();
+        _dateController.text = _formatDate(DateTime.now());
+        setState(() {
+          _selectedCategory = 'Business - Rent';
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please enter a valid amount'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -149,10 +160,10 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                               AppConstants.cardRadius,
                             ),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Text(
-                              'Expense Recording',
-                              style: TextStyle(
+                              AppLocalizationsHelper.of(context).expenses,
+                              style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -164,8 +175,8 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Expense Amount',
+                            Text(
+                              AppLocalizationsHelper.of(context).amount,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -177,19 +188,24 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                             CustomTextField(
                               placeholder: 'Enter amount in RWF',
                               controller: _amountController,
+                              keyboardType: TextInputType.number,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter expense amount';
                                 }
-                                if (double.tryParse(value) == null) {
+                                final cleanValue = value.replaceAll(',', '').trim();
+                                if (double.tryParse(cleanValue) == null) {
                                   return 'Please enter a valid amount';
+                                }
+                                if (double.parse(cleanValue) <= 0) {
+                                  return 'Amount must be greater than 0';
                                 }
                                 return null;
                               },
                             ),
                             const SizedBox(height: 16),
-                            const Text(
-                              'Category',
+                            Text(
+                              AppLocalizationsHelper.of(context).category,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -218,8 +234,8 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                               },
                             ),
                             const SizedBox(height: 16),
-                            const Text(
-                              'Description',
+                            Text(
+                              AppLocalizationsHelper.of(context).description,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -239,8 +255,8 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                               },
                             ),
                             const SizedBox(height: 16),
-                            const Text(
-                              'Expense Date',
+                            Text(
+                              AppLocalizationsHelper.of(context).date,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -269,7 +285,7 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                         BlocBuilder<ExpenseBloc, ExpenseState>(
                           builder: (context, state) {
                             return CustomButton(
-                              text: 'Add Expense',
+                              text: AppLocalizationsHelper.of(context).addExpense,
                               onPressed: state is ExpenseLoading
                                   ? null
                                   : _addExpense,
@@ -285,7 +301,7 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
             ],
           ),
         ),
-        bottomNavigationBar: const BottomNavigationWidget(currentIndex: 4),
+        bottomNavigationBar: const BottomNavigationWidget(currentIndex: 0),
       ),
     );
   }
@@ -318,8 +334,8 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              const Text(
-                'Expense Recording',
+              Text(
+                AppLocalizationsHelper.of(context).expenses,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,

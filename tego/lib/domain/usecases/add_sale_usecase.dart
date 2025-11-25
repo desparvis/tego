@@ -20,9 +20,9 @@ class AddSaleUseCase {
   /// Returns [Either<Failure, void>] where:
   /// - Left contains validation or repository failures
   /// - Right indicates successful sale creation
-  Future<Either<Failure, void>> execute(double amount, String date) async {
+  Future<Either<Failure, void>> execute(double amount, String date, [String item = '']) async {
     // Business rule validation
-    final validationResult = _validateSaleData(amount, date);
+    final validationResult = _validateSaleData(amount, date, item);
     if (validationResult != null) {
       return Left(validationResult);
     }
@@ -31,6 +31,7 @@ class AddSaleUseCase {
     final sale = Sale(
       amount: amount,
       date: date,
+      item: item,
       timestamp: DateTime.now(),
     );
     
@@ -41,7 +42,7 @@ class AddSaleUseCase {
   /// Validates sale data according to business rules
   /// 
   /// Returns null if valid, ValidationFailure if invalid
-  ValidationFailure? _validateSaleData(double amount, String date) {
+  ValidationFailure? _validateSaleData(double amount, String date, String item) {
     final errors = <String, String>{};
 
     // Validate amount
@@ -50,6 +51,13 @@ class AddSaleUseCase {
     }
     if (amount > 10000000) { // 10M RWF business limit
       errors['amount'] = 'Sale amount exceeds maximum limit';
+    }
+
+    // Validate item
+    if (item.trim().isEmpty) {
+      errors['item'] = 'Item description is required';
+    } else if (item.trim().length < 2) {
+      errors['item'] = 'Item description must be at least 2 characters';
     }
 
     // Validate date format and range

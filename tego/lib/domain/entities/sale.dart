@@ -4,12 +4,14 @@ class Sale {
   final String? id;
   final double amount;
   final String date;
+  final String item;
   final DateTime? timestamp;
 
   const Sale({
     this.id,
     required this.amount,
     required this.date,
+    this.item = '',
     this.timestamp,
   });
 
@@ -19,6 +21,7 @@ class Sale {
       id: id,
       amount: (map['amount'] as num).toDouble(),
       date: map['date'] as String,
+      item: map['item'] as String? ?? '',
       timestamp: map['timestamp']?.toDate(),
     );
   }
@@ -28,6 +31,7 @@ class Sale {
     return {
       'amount': amount,
       'date': date,
+      'item': item,
       'timestamp': timestamp,
     };
   }

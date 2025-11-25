@@ -12,8 +12,9 @@ abstract class SalesEvent {}
 class AddSaleEvent extends SalesEvent {
   final double amount;
   final String date;
+  final String item;
 
-  AddSaleEvent({required this.amount, required this.date});
+  AddSaleEvent({required this.amount, required this.date, this.item = ''});
 }
 
 class LoadSalesEvent extends SalesEvent {}
@@ -92,11 +93,12 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
     final optimisticSale = Sale(
       amount: event.amount,
       date: event.date,
+      item: event.item,
       timestamp: DateTime.now(),
     );
     
     try {
-      await _addSaleUseCase.execute(event.amount, event.date);
+      await _addSaleUseCase.execute(event.amount, event.date, event.item);
       _lastAddedSale = optimisticSale;
       emit(SalesSuccess(
         'Sale added successfully!', 

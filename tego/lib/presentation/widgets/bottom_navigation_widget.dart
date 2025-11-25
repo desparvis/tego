@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/app_localizations_helper.dart';
 import '../pages/landing_screen.dart';
 import '../pages/sales_list_screen.dart';
 import '../pages/sales_recording_screen.dart';
@@ -68,22 +69,22 @@ class BottomNavigationWidget extends StatelessWidget {
           fontFamily: AppConstants.fontFamily,
         ),
         onTap: (index) => _navigateToScreen(context, index),
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+            icon: const Icon(Icons.home),
+            label: AppLocalizationsHelper.of(context).home,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.trending_up),
-            label: 'Sales List',
+            icon: const Icon(Icons.trending_up),
+            label: AppLocalizationsHelper.of(context).sales,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle, size: 32),
-            label: 'Add Sale',
+            icon: const Icon(Icons.add_circle, size: 32),
+            label: AppLocalizationsHelper.of(context).addSale,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
+            icon: const Icon(Icons.settings),
+            label: AppLocalizationsHelper.of(context).settings,
           ),
         ],
       ),

@@ -4,20 +4,19 @@ import '../bloc/reminders_bloc.dart';
 import '../../domain/entities/reminder.dart';
 import '../widgets/bottom_navigation_widget.dart';
 
-class RemindersScreen extends StatelessWidget {
+class RemindersScreen extends StatefulWidget {
   const RemindersScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => RemindersBloc()..add(LoadReminders()),
-      child: const RemindersView(),
-    );
-  }
+  State<RemindersScreen> createState() => _RemindersScreenState();
 }
 
-class RemindersView extends StatelessWidget {
-  const RemindersView({super.key});
+class _RemindersScreenState extends State<RemindersScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<RemindersBloc>().add(LoadReminders());
+  }
 
   @override
   Widget build(BuildContext context) {

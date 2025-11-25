@@ -7,13 +7,16 @@ class AuthService {
   static final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // Email/Password Sign Up
-  static Future<UserCredential?> signUpWithEmail(String email, String password) async {
+  static Future<UserCredential?> signUpWithEmail(
+    String email,
+    String password,
+  ) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      
+
       // Send email verification
       await credential.user?.sendEmailVerification();
       return credential;
@@ -23,7 +26,10 @@ class AuthService {
   }
 
   // Email/Password Sign In
-  static Future<UserCredential?> signInWithEmail(String email, String password) async {
+  static Future<UserCredential?> signInWithEmail(
+    String email,
+    String password,
+  ) async {
     try {
       return await _auth.signInWithEmailAndPassword(
         email: email,
@@ -47,7 +53,8 @@ class AuthService {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,

@@ -12,16 +12,20 @@ class SplashScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background Gradient
+          // Background Image
+          Image.asset(
+            'assets/images/splash.jpg',
+            fit: BoxFit.cover,
+          ),
+          // Overlay for better text readability
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppConstants.primaryPurple.withValues(alpha: 0.1),
-                  AppConstants.accentPink.withValues(alpha: 0.3),
-                  AppConstants.primaryPurple.withValues(alpha: 0.2),
+                  Colors.black.withValues(alpha: 0.3),
+                  Colors.black.withValues(alpha: 0.5),
                 ],
               ),
             ),
@@ -38,7 +42,7 @@ class SplashScreen extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'Dancing Script',
                     fontSize: 32,
-                    color: AppConstants.primaryPurple,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontStyle: FontStyle.italic,
                   ),

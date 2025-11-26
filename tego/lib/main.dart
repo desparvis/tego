@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'presentation/widgets/auth_wrapper.dart';
+import 'presentation/pages/splash_screen.dart';
 import 'presentation/bloc/expense_bloc.dart';
 import 'presentation/bloc/sales_bloc.dart';
 import 'presentation/bloc/sales_cubit.dart';
@@ -201,7 +201,7 @@ class _MyAppState extends State<MyApp> {
               },
             ),
           ),
-          home: const AuthWrapper(),
+          home: const SplashScreen(),
           debugShowCheckedModeBanner: false,
         ),
       ),

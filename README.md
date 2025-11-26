@@ -146,3 +146,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Desparvis Credo Gutabarwa
 - Monica Akoi Dau Ahol
 - Kayonga Elvis
+- Vicent Mugabo

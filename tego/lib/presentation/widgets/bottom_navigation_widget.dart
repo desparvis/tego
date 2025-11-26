@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/app_localizations_helper.dart';
+import '../../core/utils/responsive_helper.dart';
+import '../../core/utils/navigation_helper.dart';
 import '../pages/landing_screen.dart';
 import '../pages/sales_list_screen.dart';
 import '../pages/sales_recording_screen.dart';
@@ -35,58 +37,68 @@ class BottomNavigationWidget extends StatelessWidget {
         return;
     }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => screen),
-    );
+    NavigationHelper.navigateAndReplace(context, screen);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: BottomNavigationBar(
-        currentIndex: currentIndex,
-        selectedItemColor: AppConstants.primaryPurple,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: const TextStyle(
-          fontFamily: AppConstants.fontFamily,
-          fontWeight: FontWeight.w600,
+    final isSmallScreen = ResponsiveHelper.isSmallScreen(context);
+    
+    return SafeArea(
+      child: Container(
+        constraints: BoxConstraints(
+          minHeight: kBottomNavigationBarHeight,
+          maxHeight: isSmallScreen ? 60 : kBottomNavigationBarHeight,
         ),
-        unselectedLabelStyle: const TextStyle(
-          fontFamily: AppConstants.fontFamily,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
         ),
-        onTap: (index) => _navigateToScreen(context, index),
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home),
-            label: AppLocalizationsHelper.of(context).home,
+        child: BottomNavigationBar(
+          currentIndex: currentIndex,
+          selectedItemColor: AppConstants.primaryPurple,
+          unselectedItemColor: Colors.grey,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          type: BottomNavigationBarType.fixed,
+          selectedLabelStyle: TextStyle(
+            fontFamily: AppConstants.fontFamily,
+            fontWeight: FontWeight.w600,
+            fontSize: isSmallScreen ? 10 : 12,
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.trending_up),
-            label: AppLocalizationsHelper.of(context).sales,
+          unselectedLabelStyle: TextStyle(
+            fontFamily: AppConstants.fontFamily,
+            fontSize: isSmallScreen ? 10 : 12,
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.add_circle, size: 32),
-            label: AppLocalizationsHelper.of(context).addSale,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.settings),
-            label: AppLocalizationsHelper.of(context).settings,
-          ),
-        ],
+          selectedFontSize: isSmallScreen ? 10 : 12,
+          unselectedFontSize: isSmallScreen ? 10 : 12,
+          iconSize: isSmallScreen ? 20 : 24,
+          onTap: (index) => _navigateToScreen(context, index),
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home),
+              label: AppLocalizationsHelper.of(context).home,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.trending_up),
+              label: AppLocalizationsHelper.of(context).sales,
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.add_circle, size: isSmallScreen ? 28 : 32),
+              label: AppLocalizationsHelper.of(context).addSale,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.settings),
+              label: AppLocalizationsHelper.of(context).settings,
+            ),
+          ],
+        ),
       ),
     );
   }

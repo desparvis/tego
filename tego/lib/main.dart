@@ -27,6 +27,7 @@ import 'core/utils/settings_manager.dart';
 import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -98,6 +99,12 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Force portrait orientation for consistent UI
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    
     return MultiProvider(
       providers: [
         // ChangeNotifier for global app state
@@ -173,10 +180,18 @@ class _MyAppState extends State<MyApp> {
           themeMode: _themeMode,
           theme: ThemeData(
             primaryColor: const Color(0xFF7B4EFF),
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF7B4EFF),
-              brightness: Brightness.light,
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF7B4EFF),
+              secondary: Color(0xFF9C27B0),
+              surface: Colors.white,
+              background: Color(0xFFFAFAFA),
+              onPrimary: Colors.white,
+              onSecondary: Colors.white,
+              onSurface: Color(0xFF1A1A1A),
+              onBackground: Color(0xFF1A1A1A),
             ),
+            scaffoldBackgroundColor: const Color(0xFFFAFAFA),
+            cardColor: Colors.white,
             fontFamily: 'Poppins',
             useMaterial3: true,
             pageTransitionsTheme: const PageTransitionsTheme(
@@ -187,11 +202,19 @@ class _MyAppState extends State<MyApp> {
             ),
           ),
           darkTheme: ThemeData(
-            primaryColor: const Color(0xFF7B4EFF),
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF7B4EFF),
-              brightness: Brightness.dark,
+            primaryColor: const Color(0xFF9C7EFF),
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF9C7EFF),
+              secondary: Color(0xFFB39DDB),
+              surface: Color(0xFF1E1E1E),
+              background: Color(0xFF121212),
+              onPrimary: Colors.black,
+              onSecondary: Colors.black,
+              onSurface: Colors.white,
+              onBackground: Colors.white,
             ),
+            scaffoldBackgroundColor: const Color(0xFF121212),
+            cardColor: const Color(0xFF1E1E1E),
             fontFamily: 'Poppins',
             useMaterial3: true,
             pageTransitionsTheme: const PageTransitionsTheme(

@@ -60,7 +60,7 @@ class _DebtScreenState extends State<DebtScreen> {
                         child: _buildSummaryCard(
                           'Money Owed to You',
                           '${state.totalReceivable.toStringAsFixed(0)} RWF',
-                          Colors.green,
+                          const Color(0xFF7B4EFF),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -68,7 +68,7 @@ class _DebtScreenState extends State<DebtScreen> {
                         child: _buildSummaryCard(
                           'Money You Owe',
                           '${state.totalPayable.toStringAsFixed(0)} RWF',
-                          Colors.red,
+                          const Color(0xFF9C7EFF),
                         ),
                       ),
                     ],
@@ -110,26 +110,36 @@ class _DebtScreenState extends State<DebtScreen> {
 
   Widget _buildSummaryCard(String title, String amount, Color color) {
     return Container(
+      constraints: const BoxConstraints(minHeight: 48),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Text(
             amount,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: color,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             title,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -139,39 +149,78 @@ class _DebtScreenState extends State<DebtScreen> {
 
   Widget _buildDebtCard(BuildContext context, Debt debt) {
     final isReceivable = debt.type == DebtType.receivable;
-    final color = isReceivable ? Colors.green : Colors.red;
+    final color = isReceivable ? const Color(0xFF7B4EFF) : const Color(0xFF9C7EFF);
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: debt.isPaid ? Colors.grey : color,
-          child: Icon(
-            isReceivable ? Icons.arrow_downward : Icons.arrow_upward,
-            color: Colors.white,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-        ),
-        title: Text(
-          debt.customerName,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            decoration: debt.isPaid ? TextDecoration.lineThrough : null,
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: debt.isPaid ? Colors.grey : color,
+            child: Icon(
+              isReceivable ? Icons.arrow_downward : Icons.arrow_upward,
+              color: Colors.white,
+            ),
           ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${debt.amount.toStringAsFixed(0)} RWF'),
-            Text(debt.description, style: const TextStyle(fontSize: 12)),
-            Text('Due: ${_formatDate(debt.dueDate)}', style: const TextStyle(fontSize: 12)),
-          ],
-        ),
-        trailing: debt.isPaid
-            ? const Icon(Icons.check_circle, color: Colors.green)
-            : IconButton(
-                icon: const Icon(Icons.check),
-                onPressed: () => context.read<DebtBloc>().add(MarkDebtPaid(debt.id!)),
-              ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  debt.customerName,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: color,
+                    decoration: debt.isPaid ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${debt.amount.toStringAsFixed(0)} RWF',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  debt.description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.black.withValues(alpha: 0.6),
+                  ),
+                ),
+                Text(
+                  'Due: ${_formatDate(debt.dueDate)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.black.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          debt.isPaid
+              ? Icon(Icons.check_circle, color: color)
+              : IconButton(
+                  icon: Icon(Icons.check, color: color),
+                  onPressed: () => context.read<DebtBloc>().add(MarkDebtPaid(debt.id!)),
+                ),
+        ],
       ),
     );
   }

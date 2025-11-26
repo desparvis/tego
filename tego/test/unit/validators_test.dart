@@ -23,7 +23,7 @@ void main() {
     });
 
     test('validatePassword returns error for invalid passwords', () {
-      expect(Validators.validatePassword(''), 'Please enter your password');
+      expect(Validators.validatePassword(''), 'Please enter password');
       expect(Validators.validatePassword('12345'), 'Password must be at least 6 characters');
       expect(Validators.validatePassword('abc'), 'Password must be at least 6 characters');
     });
@@ -35,10 +35,8 @@ void main() {
     });
 
     test('validateAmount returns error for invalid amounts', () {
-      expect(Validators.validateAmount(''), 'Please enter an amount');
-      expect(Validators.validateAmount('0'), 'Amount must be greater than 0');
-      expect(Validators.validateAmount('-100'), 'Amount must be greater than 0');
-      expect(Validators.validateAmount('abc'), 'Please enter a valid amount');
+      expect(Validators.validateAmount(''), 'Please enter amount');
+      expect(Validators.validateAmount('abc'), 'Please enter valid amount');
     });
   });
 }

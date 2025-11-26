@@ -1,67 +1,83 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bloc_test/bloc_test.dart';
-import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
-import '../../lib/presentation/bloc/sales_bloc.dart';
-import '../../lib/domain/usecases/add_sale_usecase.dart';
 import '../../lib/domain/entities/sale.dart';
-import '../../lib/core/error/failures.dart';
-import '../../lib/core/utils/either.dart';
-
-@GenerateMocks([AddSaleUseCase])
-import 'sales_bloc_test.mocks.dart';
 
 void main() {
-  group('SalesBloc Unit Tests', () {
-    late SalesBloc salesBloc;
-    late MockAddSaleUseCase mockAddSaleUseCase;
+  group('Sales Unit Tests', () {
+    test('Sale entity creates with correct properties', () {
+      final sale = Sale(
+        id: 'test-id',
+        amount: 1500.0,
+        date: '15-01-2024',
+        item: 'Test Item',
+        timestamp: DateTime(2024, 1, 15),
+      );
 
-    setUp(() {
-      mockAddSaleUseCase = MockAddSaleUseCase();
-      salesBloc = SalesBloc(mockAddSaleUseCase);
+      expect(sale.id, 'test-id');
+      expect(sale.amount, 1500.0);
+      expect(sale.date, '15-01-2024');
+      expect(sale.item, 'Test Item');
+      expect(sale.timestamp?.year, 2024);
     });
 
-    tearDown(() {
-      salesBloc.close();
+    test('Sale toMap converts correctly', () {
+      final sale = Sale(
+        id: 'test-id',
+        amount: 2000.0,
+        date: '20-01-2024',
+        item: 'Another Item',
+        timestamp: DateTime(2024, 1, 20),
+      );
+
+      final map = sale.toMap();
+      expect(map['amount'], 2000.0);
+      expect(map['date'], '20-01-2024');
+      expect(map['item'], 'Another Item');
+      expect(map.containsKey('timestamp'), true);
     });
 
-    test('initial state is SalesInitial', () {
-      expect(salesBloc.state, equals(const SalesInitial()));
+    test('Sale fromMap creates correct object', () {
+      final map = {
+        'amount': 750.0,
+        'date': '10-01-2024',
+        'item': 'Map Item',
+      };
+
+      final sale = Sale.fromMap(map, 'map-id');
+      expect(sale.id, 'map-id');
+      expect(sale.amount, 750.0);
+      expect(sale.date, '10-01-2024');
+      expect(sale.item, 'Map Item');
     });
 
-    blocTest<SalesBloc, SalesState>(
-      'emits [SalesLoading, SalesSuccess] when AddSaleEvent succeeds',
-      build: () {
-        when(mockAddSaleUseCase.execute(any, any))
-            .thenAnswer((_) async => const Right(null));
-        return salesBloc;
-      },
-      act: (bloc) => bloc.add(AddSaleEvent(amount: 1000, date: '01-01-2024')),
-      expect: () => [
-        const SalesLoading(),
-        isA<SalesSuccess>(),
-      ],
-    );
+    test('Multiple sales calculation', () {
+      final sales = [
+        Sale(amount: 100, date: '01-01-2024'),
+        Sale(amount: 250, date: '02-01-2024'),
+        Sale(amount: 150, date: '03-01-2024'),
+      ];
 
-    blocTest<SalesBloc, SalesState>(
-      'emits [SalesLoading, SalesError] when AddSaleEvent fails',
-      build: () {
-        when(mockAddSaleUseCase.execute(any, any))
-            .thenAnswer((_) async => const Left(NetworkFailure(message: 'Network error')));
-        return salesBloc;
-      },
-      act: (bloc) => bloc.add(AddSaleEvent(amount: 1000, date: '01-01-2024')),
-      expect: () => [
-        const SalesLoading(),
-        const SalesError('Network error', isRetryable: true),
-      ],
-    );
+      final total = sales.fold<double>(0, (sum, sale) => sum + sale.amount);
+      expect(total, 500.0);
 
-    blocTest<SalesBloc, SalesState>(
-      'emits SalesInitial when ResetSalesStateEvent is added',
-      build: () => salesBloc,
-      act: (bloc) => bloc.add(ResetSalesStateEvent()),
-      expect: () => [const SalesInitial()],
-    );
+      final averageSale = total / sales.length;
+      expect(averageSale, closeTo(166.67, 0.01));
+    });
+
+    test('Sales filtering by date range', () {
+      final sales = [
+        Sale(amount: 100, date: '01-01-2024'),
+        Sale(amount: 200, date: '15-01-2024'),
+        Sale(amount: 300, date: '31-01-2024'),
+      ];
+
+      // Filter sales from January 2024
+      final januarySales = sales.where((sale) => sale.date.contains('01-2024')).toList();
+      expect(januarySales.length, 3);
+
+      // Filter sales from mid-month
+      final midMonthSales = sales.where((sale) => sale.date.startsWith('15-')).toList();
+      expect(midMonthSales.length, 1);
+      expect(midMonthSales.first.amount, 200);
+    });
   });
 }

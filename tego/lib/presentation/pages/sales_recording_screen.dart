@@ -118,7 +118,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
 
               // Main Content
               Expanded(
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppConstants.defaultPadding,
                     vertical: 20,
@@ -126,7 +126,6 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
                   child: Form(
                     key: _formKey,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: _buildFormContent(context),
                     ),
@@ -167,88 +166,85 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
           ),
         ),
       ),
+      const SizedBox(height: 24),
 
       // Form Fields matching expense screen layout
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocalizationsHelper.of(context).amount,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppConstants.primaryPurple,
-              fontFamily: AppConstants.fontFamily,
-            ),
-          ),
-          const SizedBox(height: 8),
-          CustomTextField(
-            placeholder: 'Enter amount in RWF',
-            controller: _amountController,
-            keyboardType: TextInputType.number,
+      Text(
+        AppLocalizationsHelper.of(context).amount,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: AppConstants.primaryPurple,
+          fontFamily: AppConstants.fontFamily,
+        ),
+      ),
+      const SizedBox(height: 8),
+      CustomTextField(
+        placeholder: 'Enter amount in RWF',
+        controller: _amountController,
+        keyboardType: TextInputType.number,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter sale amount';
+          }
+          final cleanValue = value.replaceAll(',', '').trim();
+          if (double.tryParse(cleanValue) == null) {
+            return 'Please enter a valid amount';
+          }
+          if (double.parse(cleanValue) <= 0) {
+            return 'Amount must be greater than 0';
+          }
+          return null;
+        },
+      ),
+      const SizedBox(height: 16),
+      Text(
+        'Item Sold',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: AppConstants.primaryPurple,
+          fontFamily: AppConstants.fontFamily,
+        ),
+      ),
+      const SizedBox(height: 8),
+      CustomTextField(
+        placeholder: 'What was sold?',
+        controller: _itemController,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return 'Please enter what was sold';
+          }
+          return null;
+        },
+      ),
+      const SizedBox(height: 16),
+      Text(
+        AppLocalizationsHelper.of(context).date,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: AppConstants.primaryPurple,
+          fontFamily: AppConstants.fontFamily,
+        ),
+      ),
+      const SizedBox(height: 8),
+      GestureDetector(
+        onTap: _selectDate,
+        child: AbsorbPointer(
+          child: CustomTextField(
+            placeholder: 'Select date',
+            controller: _dateController,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter sale amount';
-              }
-              final cleanValue = value.replaceAll(',', '').trim();
-              if (double.tryParse(cleanValue) == null) {
-                return 'Please enter a valid amount';
-              }
-              if (double.parse(cleanValue) <= 0) {
-                return 'Amount must be greater than 0';
+                return 'Please select sale date';
               }
               return null;
             },
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Item Sold',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppConstants.primaryPurple,
-              fontFamily: AppConstants.fontFamily,
-            ),
-          ),
-          const SizedBox(height: 8),
-          CustomTextField(
-            placeholder: 'What was sold?',
-            controller: _itemController,
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Please enter what was sold';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          Text(
-            AppLocalizationsHelper.of(context).date,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppConstants.primaryPurple,
-              fontFamily: AppConstants.fontFamily,
-            ),
-          ),
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: _selectDate,
-            child: AbsorbPointer(
-              child: CustomTextField(
-                placeholder: 'Select date',
-                controller: _dateController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select sale date';
-                  }
-                  return null;
-                },
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
+      const SizedBox(height: 32),
 
       // Add Sale Button matching expense screen
       BlocBuilder<SalesBloc, SalesState>(
@@ -260,6 +256,7 @@ class _SalesRecordingScreenState extends State<SalesRecordingScreen> {
           );
         },
       ),
+      const SizedBox(height: 20),
     ];
   }
 

@@ -137,7 +137,7 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
             children: [
               _buildHeader(),
               Expanded(
-                child: Padding(
+                child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppConstants.defaultPadding,
                     vertical: 20,
@@ -145,7 +145,6 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                   child: Form(
                     key: _formKey,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
@@ -172,9 +171,7 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                             ),
                           ),
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                        const SizedBox(height: 24),
                             Text(
                               AppLocalizationsHelper.of(context).amount,
                               style: TextStyle(
@@ -280,8 +277,7 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                        const SizedBox(height: 32),
                         BlocBuilder<ExpenseBloc, ExpenseState>(
                           builder: (context, state) {
                             return CustomButton(
@@ -293,6 +289,7 @@ class _ExpenseRecordingScreenState extends State<ExpenseRecordingScreen> {
                             );
                           },
                         ),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
